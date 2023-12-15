@@ -92,18 +92,15 @@ features_bruno=np.loadtxt("features_bruno.dat")
 features_marta=np.loadtxt("features_marta.dat")
 features_dns=np.loadtxt("features_dns_tunneling.dat")
 
-#It assigns class labels (0 for browsing, 1 for YouTube, and 2 for mining) to the respective datasets
-#cada classe vai conter:mean, median and standard deviation  and also the silence periods features(mean median and deviation) for upload and download therefore: 6*2
+#It assigns class labels (0 for Bruno, 1 for Marta, and 2 for dns_tunneling) to the respective datasets
+#cada classe vai conter:mean, median and standard deviation  and also the silence periods features(mean median and deviation) and percentis for upload and download 
 oClass_bruno=np.ones((len(features_bruno),1))*0
 oClass_marta=np.ones((len(features_marta),1))*1
 oClass_dns=np.ones((len(features_dns),1))*2
 
-# empilhar esses arrays verticalmente usando np.vstack(), você cria um único conjunto de features que combina todas essas fontes de dados verticalmente.
+
 #resulta num conjunto de features que contém todos os dados dessas diferentes fontes combinados verticalmente.
 features=np.vstack((features_marta,features_bruno,features_dns))
-# print("features\n")
-# print(features_dns)
-# print("\n")
 print("oclass\n")
 #um único array oClass que contém todas as classes correspondentes às observações do conjunto de dados combinado features.
 oClass=np.vstack((oClass_marta,oClass_bruno,oClass_dns))
@@ -162,7 +159,6 @@ oClass=np.vstack((oClass_marta,oClass_bruno,oClass_dns))
 
 
 
-
 #divisão do conjunto de dados em dados de treino e de teste.
 
 ## -- 3 -- ##
@@ -193,385 +189,628 @@ testFeatures_dns=features_dns[pD:,:]
 i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
 o3testClass=np.vstack((oClass_bruno[pB:],oClass_marta[pM:],oClass_dns[pD:]))
 
+#                                                                                               ##### -- 7 -- Centroids Distances SEM PCA ######################### ##
 
-# ## -- 4 -- ##
-# # O K-Means é um algoritmo de agrupamento muito comum e simples, usado para particionar um conjunto de dados em clusters.
-# # Ele opera de maneira iterativa para atribuir cada ponto de dados a um dos K clusters, onde K é um número pré-definido pelo utilizador.
-# print('\n-- Clustreing with K-Means --')
-# num_classes = len(np.unique(o3testClass))
-# kmeans = KMeans(n_clusters=100, random_state=0, n_init="auto")
-# i3Ctrain=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
-# i3Ctrain = StandardScaler().fit_transform(i3Ctrain)
-# labels= kmeans.fit_predict(i3Ctrain)
-
-# # Print the lengths of test labels and test class to check if they match
-#print("Length of test labels:", len(labels))
-#print("Training data shape:", i3Ctrain.shape)
-# print("Test data shape:", i3Atest.shape)
-
-# # Check unique values or any discrepancies in features
-# print("Unique values in training data class:", np.unique(o3trainClass))
-# print("Unique values in test data class:", np.unique(o3testClass))
-
-# #Browsing está no Cluster 1, YouTube no Cluster 0 e 2 e Mining no Cluster 1
-# for i in range(len(labels)):
-#     print('Obs: {:2} ({}): K-Means Cluster Label: -> {}'.format(i,Classes[o3testClass[i][0]],labels[i]))
-
-# ## -- 5 -- ##
-# print('\n-- Clustreing with DBSCAN --')
-# i3Ctrain=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
-# i3Ctrain = StandardScaler().fit_transform(i3Ctrain)
-# db = DBSCAN(eps=0.5, min_samples=10).fit(i3Ctrain)
-# labels = db.labels_
-
-# for i in range(len(labels)):
-#     print('Obs: {:2} ({}): DBSCAN Cluster Label: -> {}'.format(i,Classes[o3testClass[i][0]],labels[i]))
-
-# ## -- 7 -- ##
-
-# i2train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
-# scaler = MaxAbsScaler().fit(i2train)
-# i2train=scaler.transform(i2train)
+# i2train=np.vstack((trainFeatures_bruno,trainFeatures_marta))
+# #scaler = MaxAbsScaler().fit(i2train)
+# #i2train=scaler.transform(i2train)
 
 # centroids={}
-# for c in range(2):  # Only the first two classes
+# for c in range(2):  # Only the first two classes (client classes)
 #     pClass=(o2trainClass==c).flatten()
 #     centroids.update({c:np.mean(i2train[pClass,:],axis=0)})
-# print('All Features Centroids:\n',centroids)
+# #print('All Features Centroids:\n',centroids)
 
 # i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
 # #i3Atest=scaler.transform(i3Atest)
 
-# AnomalyThreshold=10
+# print('\n-- Anomaly Detection based on Centroids Distances without PCA --')
+# nObsTest,nFea=i3Atest.shape
 
-# print('\n-- Anomaly Detection based on Centroids Distances --')
+# # Define a range of threshold values to test
+# threshold_values = [0.5, 1.0,1.2, 1.1, 1.5, 2.0,5,10]  # Add more threshold values as needed
+
+# # Initialize lists to store evaluation metrics for each threshold
+# threshold_metrics = []
+
+# for AnomalyThreshold in threshold_values:
+#     # Initialize variables for TP, FP, TN, FN for the current threshold
+#     tp_centroids = 0
+#     fp_centroids = 0
+#     tn_centroids = 0
+#     fn_centroids = 0
+
+#     # Perform anomaly detection based on the current threshold
+#     for i in range(nObsTest):
+#         x = i3Atest[i]
+#         dists = [distance(x, centroids[0]), distance(x, centroids[1])]
+#         if min(dists) > AnomalyThreshold:
+#             result = "Anomaly"
+#             if o3testClass[i][0] == 1:  # Positive class
+#                 fn_centroids += 1  # False Negative
+#             else:
+#                 tn_centroids += 1  # True Negative
+#         else:
+#             result = "OK"
+#             if o3testClass[i][0] == 1:  # Positive class
+#                 tp_centroids += 1  # True Positive
+#             else:
+#                 fp_centroids += 1  # False Positive
+
+#     # Calculate evaluation metrics for the current threshold
+#     accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
+#     precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
+#     recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (tp_centroids + fn_centroids) != 0 else 0
+#     f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (precision_centroids + recall_centroids))/100 if (precision_centroids + recall_centroids) != 0 else 0
+
+#     # Store metrics for the current threshold in the list
+#     threshold_metrics.append({
+#         'AnomalyThreshold': AnomalyThreshold,
+#         'TP': tp_centroids,
+#         'FP': fp_centroids,
+#         'TN': tn_centroids,
+#         'FN': fn_centroids,
+#         'Accuracy': accuracy_centroids,
+#         'Precision': precision_centroids,
+#         'Recall': recall_centroids,
+#         'F1 Score': f1_score_centroids
+#     })
+
+# # Print metrics for each threshold
+# for metric in threshold_metrics:
+#     print(f"Anomaly Threshold: {metric['AnomalyThreshold']}")
+#     print(f"True Positives (TP): {metric['TP']}")
+#     print(f"False Negatives (FN): {metric['FN']}")
+#     print(f"False Positives (FP): {metric['FP']}")
+#     print(f"True Negatives (TN): {metric['TN']}")
+#     print(f"Accuracy: {metric['Accuracy']}")
+#     print(f"Precision: {metric['Precision']}")
+#     print(f"Recall: {metric['Recall']}")
+#     print(f"F1 Score: {metric['F1 Score']}")
+#     print("-------------------")
+
+
+#                                                                                    ######## -- 7.2 -- Centroids Distances Com PCA ######################### ##
+# Define a range of components to test
+components_to_test = [10, 15, 20]  # Adjust as needed
+print('\n-- Anomaly Detection based on Centroids Distances with PCA --')
+
+for n_components in components_to_test:
+    i2train = np.vstack((trainFeatures_bruno, trainFeatures_marta))
+    #scaler = MaxAbsScaler().fit(i2train)
+    #i2train = scaler.transform(i2train)
+
+    # Initialize PCA and fit-transform the data
+    pca = PCA(n_components=n_components)
+    i2train_pca = pca.fit_transform(i2train)
+
+    centroids = {}
+    for c in range(2):  # Only the first two classes (client classes)
+        pClass = (o2trainClass == c).flatten()
+        centroids.update({c: np.mean(i2train_pca[pClass, :], axis=0)})
+
+    i3Atest = np.vstack((testFeatures_bruno, testFeatures_marta, testFeatures_dns))
+    #i3Atest = scaler.transform(i3Atest)
+    i3Atest_pca = pca.transform(i3Atest)
+
+    print(f'\n-- Anomaly Detection based on Centroids Distances (Components: {n_components}) --')
+    nObsTest, nFea = i3Atest_pca.shape
+
+    # Define a range of threshold values to test
+    threshold_values = [0.5,1,2]  # Add more threshold values as needed
+
+    # Initialize lists to store evaluation metrics for each threshold
+    threshold_metrics = []
+
+    for AnomalyThreshold in threshold_values:
+        # Initialize variables for TP, FP, TN, FN for the current threshold
+        tp_centroids = 0
+        fp_centroids = 0
+        tn_centroids = 0
+        fn_centroids = 0
+
+        # Perform anomaly detection based on the current threshold
+        for i in range(nObsTest):
+            x = i3Atest_pca[i]
+            dists = [distance(x, centroids[0]), distance(x, centroids[1])]
+            if min(dists) > AnomalyThreshold:
+                result = "Anomaly"
+                if o3testClass[i][0] == 1:  # Positive class
+                    fn_centroids += 1  # False Negative
+                else:
+                    tn_centroids += 1  # True Negative
+            else:
+                result = "OK"
+                if o3testClass[i][0] == 1:  # Positive class
+                    tp_centroids += 1  # True Positive
+                else:
+                    fp_centroids += 1  # False Positive
+
+        # Calculate evaluation metrics for the current threshold
+        accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
+        precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (
+                    tp_centroids + fp_centroids) != 0 else 0
+        recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (
+                    tp_centroids + fn_centroids) != 0 else 0
+        f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (
+                    precision_centroids + recall_centroids)) / 100 if (
+                                        precision_centroids + recall_centroids) != 0 else 0
+
+        # Store metrics for the current threshold in the list
+        threshold_metrics.append({
+            'AnomalyThreshold': AnomalyThreshold,
+            'TP': tp_centroids,
+            'FP': fp_centroids,
+            'TN': tn_centroids,
+            'FN': fn_centroids,
+            'Accuracy': accuracy_centroids,
+            'Precision': precision_centroids,
+            'Recall': recall_centroids,
+            'F1 Score': f1_score_centroids
+        })
+
+    # Print metrics for each threshold
+    for metric in threshold_metrics:
+        print(f"Anomaly Threshold: {metric['AnomalyThreshold']}")
+        print(f"True Positives (TP): {metric['TP']}")
+        print(f"False Negatives (FN): {metric['FN']}")
+        print(f"False Positives (FP): {metric['FP']}")
+        print(f"True Negatives (TN): {metric['TN']}")
+        print(f"Accuracy: {metric['Accuracy']}")
+        print(f"Precision: {metric['Precision']}")
+        print(f"Recall: {metric['Recall']}")
+        print(f"F1 Score: {metric['F1 Score']}")
+        print("-------------------")
+
+
+#                                                                           # -- 8 -- Anomaly Detection based on One Class Support Vector Machines WITHOUT PCA ###############################
+# print('\n-- Anomaly Detection based on One Class Support Vector Machines--')
+# i2train=np.vstack((trainFeatures_marta,trainFeatures_bruno))
+# i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
+
+# nu=0.5
+# ocsvm = svm.OneClassSVM(gamma='scale',kernel='linear',nu=nu).fit(i2train)
+# rbf_ocsvm = svm.OneClassSVM(gamma='scale',kernel='rbf',nu=nu).fit(i2train)
+# poly_ocsvm = svm. OneClassSVM(gamma='scale',kernel='poly',nu=nu,degree=2).fit(i2train)
+
+# L1=ocsvm.predict(i3Atest)
+# L2=rbf_ocsvm.predict(i3Atest)
+# L3=poly_ocsvm.predict(i3Atest)
+
+# AnomResults={-1:"Anomaly",1:"OK"}
+
+# # 
+# tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
+# tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
+# tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
+
+
 # nObsTest,nFea=i3Atest.shape
 # for i in range(nObsTest):
-#     x=i3Atest[i]
-#     dists=[distance(x,centroids[0]),distance(x,centroids[1])]
-#     if min(dists)>AnomalyThreshold:
-#         result="Anomaly"
+#     print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],AnomResults[L1[i]],AnomResults[L2[i]],AnomResults[L3[i]]))
+    
+#     # Linear
+#     if AnomResults[L1[i]] == "Anomaly":
+#         if o3testClass[i][0] == 1:  # Positive class
+#             tp_linear += 1
+#         else:  # Negative class
+#             fp_linear += 1
 #     else:
-#         result="OK"
+#         if o3testClass[i][0] == 1:
+#             fn_linear += 1
+#         else:
+#             tn_linear += 1
 
-#     print('Obs: {:2} ({}): Normalized Distances to Centroids: [{:.4f},{:.4f}] -> Result -> {}'.format(i,Classes[o3testClass[i][0]],*dists,result))
+#     # RBF
+#     if AnomResults[L2[i]] == "Anomaly":
+#         if o3testClass[i][0] == 1:  # Positive class
+#             tp_rbf += 1
+#         else:  # Negative class
+#             fp_rbf += 1
+#     else:
+#         if o3testClass[i][0] == 1:
+#             fn_rbf += 1
+#         else:
+#             tn_rbf += 1
+
+#     # Poly
+#     if AnomResults[L3[i]] == "Anomaly":
+#         if o3testClass[i][0] == 1:  # Positive class
+#             tp_poly += 1
+#         else:  # Negative class
+#             fp_poly += 1
+#     else:
+#         if o3testClass[i][0] == 1:
+#             fn_poly += 1
+#         else:
+#             tn_poly += 1
 
 
-## -- 8 -- ##
+# total_samples = nObsTest  # O número total de amostras
 
-#################################################APLICAR PCA AOS DADOS DE TREINO E TESTE e VER RESULTADOS#####################################################
+# accuracy_linear = ((tp_linear + tn_linear) / total_samples) * 100
+# precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
+
+# accuracy_rbf = ((tp_rbf + tn_rbf) / total_samples) * 100
+# precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
+
+# accuracy_poly = ((tp_poly + tn_poly) / total_samples) * 100
+# precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
+
+
+# print("Metrics for Linear Kernel:")
+# print(f"True Positives (TP): {tp_linear}")
+# print(f"False Positives (FP): {fp_linear}")
+# print(f"True Negatives (TN): {tn_linear}")
+# print(f"False Negatives (FN): {fn_linear}\n")
+# print(f"Accuracy: {accuracy_linear}")
+# print(f"Precision: {precision_linear}\n")
+
+# print("Metrics for RBF Kernel:")
+# print(f"True Positives (TP): {tp_rbf}")
+# print(f"False Positives (FP): {fp_rbf}")
+# print(f"True Negatives (TN): {tn_rbf}")
+# print(f"False Negatives (FN): {fn_rbf}\n")
+# print(f"Accuracy: {accuracy_rbf}")
+# print(f"Precision: {precision_rbf}\n")
+
+
+# print("Metrics for Poly Kernel:")
+# print(f"True Positives (TP): {tp_poly}")
+# print(f"False Positives (FP): {fp_poly}")
+# print(f"True Negatives (TN): {tn_poly}")
+# print(f"False Negatives (FN): {fn_poly}\n")
+# print(f"Accuracy: {accuracy_poly}")
+# print(f"Precision: {precision_poly}\n")
+
+
+
+
+#                                                                       # -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
 # pca = PCA(n_components=10)  # Número de componentes principais
 # i2train_pca = pca.fit_transform(i2train)
 # i3Atest_pca = pca.transform(i3Atest)
 
-n_components_list = [2, 5, 10, 20]
-tp, fn, tn, fp = 0, 0, 0, 0
+# n_components_list = [1,5,10,15,16,17,18,19,20,21]
+# tp, fn, tn, fp = 0, 0, 0, 0
 
-# Loop pelos diferentes números de componentes PCA
-for n_components in n_components_list:
-    # Reduzindo a dimensionalidade com PCA
-    pca = PCA(n_components=n_components)
-    i2train_pca = pca.fit_transform(i2train)
-    i3Atest_pca = pca.transform(i3Atest)
+# # Loop pelos diferentes números de componentes PCA
+# for n_components in n_components_list:
+#     # Reduzindo a dimensionalidade com PCA
+#     pca = PCA(n_components=n_components)
+#     i2train_pca = pca.fit_transform(i2train)
+#     i3Atest_pca = pca.transform(i3Atest)
     
-    # Treinando o modelo OneClassSVM
-    nu = 0.5
-    ocsvm = OneClassSVM(gamma='scale', kernel='linear', nu=nu).fit(i2train_pca)
-    L = ocsvm.predict(i3Atest_pca)
+#     # Treinando o modelo OneClassSVM
+#     nu = 0.5
+#     ocsvm = OneClassSVM(gamma='scale', kernel='linear', nu=nu).fit(i2train_pca)
+#     L = ocsvm.predict(i3Atest_pca)
     
-    # Calculando as métricas
-    tp, fn, tn, fp = 0, 0, 0, 0
-    for i in range(len(L)):
-        if L[i] == 1 and o3testClass[i][0] == 1:
-            tp += 1
-    # Condição para falso positivo (FP)
-        elif L[i] == 1 and o3testClass[i][0] != 1:
-            fp += 1
-    # Condição para verdadeiro negativo (TN)
-        elif L[i] != 1 and o3testClass[i][0] != 1:
-            tn += 1
-    # Condição para falso negativo (FN)
-        elif L[i] != 1 and o3testClass[i][0] == 1:
-            fn += 1
+#     # Calculando as métricas
+#     tp, fn, tn, fp = 0, 0, 0, 0
+#     for i in range(len(L)):
+#         if L[i] == 1 and o3testClass[i][0] == 1:
+#             tp += 1
+#     # Condição para falso positivo (FP)
+#         elif L[i] == 1 and o3testClass[i][0] != 1:
+#             fp += 1
+#     # Condição para verdadeiro negativo (TN)
+#         elif L[i] != 1 and o3testClass[i][0] != 1:
+#             tn += 1
+#     # Condição para falso negativo (FN)
+#         elif L[i] != 1 and o3testClass[i][0] == 1:
+#             fn += 1
         
-    accuracy = ((tp + tn) / len(L)) * 100
-    precision = (tp / (tp + fp)) * 100 if tp + fp > 0 else 0
+#     accuracy = ((tp + tn) / len(L)) * 100
+#     precision = (tp / (tp + fp)) * 100 if tp + fp > 0 else 0
     
-    # Imprimindo os resultados para cada número de componentes PCA
-    print(f"Metrics for {n_components} PCA Components:")
-    print(f"True Positives (TP): {tp}")
-    print(f"False Positives (FP): {fp}")
-    print(f"True Negatives (TN): {tn}")
-    print(f"False Negatives (FN): {fn}\n")
-    print(f"Accuracy: {accuracy}")
-    print(f"Precision: {precision}\n")
-
-########################################################Anomaly Detection based on One Class Support Vector Machines sem pca ############################################SEM PCA#############################################
-print('\n-- Anomaly Detection based on One Class Support Vector Machines--')
-i2train=np.vstack((trainFeatures_marta,trainFeatures_bruno))
-i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
-
-nu=0.5
-ocsvm = svm.OneClassSVM(gamma='scale',kernel='linear',nu=nu).fit(i2train)
-rbf_ocsvm = svm.OneClassSVM(gamma='scale',kernel='rbf',nu=nu).fit(i2train)
-poly_ocsvm = svm. OneClassSVM(gamma='scale',kernel='poly',nu=nu,degree=2).fit(i2train)
-
-L1=ocsvm.predict(i3Atest)
-L2=rbf_ocsvm.predict(i3Atest)
-L3=poly_ocsvm.predict(i3Atest)
-
-AnomResults={-1:"Anomaly",1:"OK"}
-
-# 
-tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
-tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
+#     # Imprimindo os resultados para cada número de componentes PCA
+#     print(f"Metrics for {n_components} PCA Components:")
+#     print(f"True Positives (TP): {tp}")
+#     print(f"False Positives (FP): {fp}")
+#     print(f"True Negatives (TN): {tn}")
+#     print(f"False Negatives (FN): {fn}\n")
+#     print(f"Accuracy: {accuracy}")
+#     print(f"Precision: {precision}\n")
 
 
-nObsTest,nFea=i3Atest.shape
-for i in range(nObsTest):
-    print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],AnomResults[L1[i]],AnomResults[L2[i]],AnomResults[L3[i]]))
-    
-    # Linear
-    if AnomResults[L1[i]] == "Anomaly":
-        if o3testClass[i][0] == 1:  # Positive class
-            tp_linear += 1
-        else:  # Negative class
-            fp_linear += 1
-    else:
-        if o3testClass[i][0] == 1:
-            fn_linear += 1
-        else:
-            tn_linear += 1
 
-    # RBF
-    if AnomResults[L2[i]] == "Anomaly":
-        if o3testClass[i][0] == 1:  # Positive class
-            tp_rbf += 1
-        else:  # Negative class
-            fp_rbf += 1
-    else:
-        if o3testClass[i][0] == 1:
-            fn_rbf += 1
-        else:
-            tn_rbf += 1
+#                                                                           ###### -- 10 Classification based on Support Vector Machines without PCA -- #####################################################################################
+# print('\n-- Classification based on Support Vector Machines --')
 
-    # Poly
-    if AnomResults[L3[i]] == "Anomaly":
-        if o3testClass[i][0] == 1:  # Positive class
-            tp_poly += 1
-        else:  # Negative class
-            fp_poly += 1
-    else:
-        if o3testClass[i][0] == 1:
-            fn_poly += 1
-        else:
-            tn_poly += 1
+# i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
+# i3Ctest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
 
 
-total_samples = nObsTest  # O número total de amostras
+# svc = svm.SVC(kernel='linear').fit(i3train, o3trainClass)
+# rbf_svc = svm.SVC(kernel='rbf').fit(i3train, o3trainClass)
+# poly_svc = svm.SVC(kernel='poly',degree=2).fit(i3train, o3trainClass)
 
-accuracy_linear = ((tp_linear + tn_linear) / total_samples) * 100
-precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
+# L1=svc.predict(i3Ctest)
+# L2=rbf_svc.predict(i3Ctest)
+# L3=poly_svc.predict(i3Ctest)
+# print('\n')
 
-accuracy_rbf = ((tp_rbf + tn_rbf) / total_samples) * 100
-precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
+# # Linear SVM
+# tp_svm_linear, fn_svm_linear, tn_svm_linear, fp_svm_linear = 0, 0, 0, 0
+# # RBF SVM
+# tp_svm_rbf, fn_svm_rbf, tn_svm_rbf, fp_svm_rbf = 0, 0, 0, 0
+# # Poly SVM
+# tp_svm_poly, fn_svm_poly, tn_svm_poly, fp_svm_poly = 0, 0, 0, 0
 
-accuracy_poly = ((tp_poly + tn_poly) / total_samples) * 100
-precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
+# nObsTest,nFea=i3Ctest.shape
 
+# for i in range(nObsTest):
+#     print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],Classes[L1[i]],Classes[L2[i]],Classes[L3[i]]))
 
-print("Metrics for Linear Kernel:")
-print(f"True Positives (TP): {tp_linear}")
-print(f"False Positives (FP): {fp_linear}")
-print(f"True Negatives (TN): {tn_linear}")
-print(f"False Negatives (FN): {fn_linear}\n")
-print(f"Accuracy: {accuracy_linear}")
-print(f"Precision: {precision_linear}\n")
+#     # Linear SVM
 
-print("Metrics for RBF Kernel:")
-print(f"True Positives (TP): {tp_rbf}")
-print(f"False Positives (FP): {fp_rbf}")
-print(f"True Negatives (TN): {tn_rbf}")
-print(f"False Negatives (FN): {fn_rbf}\n")
-print(f"Accuracy: {accuracy_rbf}")
-print(f"Precision: {precision_rbf}\n")
+#     if Classes[L1[i]] == Classes[o3testClass[i][0]]:
+#         if Classes[L1[i]] == 'DNS':  # Positive class
+#             tp_svm_linear += 1
+#         else:  # Negative class
+#             tn_svm_linear += 1
+#     else:
+#         if Classes[L1[i]] == 'DNS':
+#             fn_svm_linear += 1
+#         else:
+#             fp_svm_linear += 1
 
+#     # RBF SVM (Repetir a lógica similar para o kernel RBF)
+#     if Classes[L2[i]] == Classes[o3testClass[i][0]]:
+#         if Classes[L2[i]] == 'DNS':  # Positive class
+#             tp_svm_rbf += 1
+#         else:  # Negative class
+#             tn_svm_rbf += 1
+#     else:
+#         if Classes[L2[i]] == 'DNS':
+#             fn_svm_rbf += 1
+#         else:
+#             fp_svm_rbf += 1
 
-print("Metrics for Poly Kernel:")
-print(f"True Positives (TP): {tp_poly}")
-print(f"False Positives (FP): {fp_poly}")
-print(f"True Negatives (TN): {tn_poly}")
-print(f"False Negatives (FN): {fn_poly}\n")
-print(f"Accuracy: {accuracy_poly}")
-print(f"Precision: {precision_poly}\n")
-
-
-## -- 10 Classification based on Support Vector Machines -- #####################################################################################
-print('\n-- Classification based on Support Vector Machines --')
-
-i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
-i3Ctest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
-
-
-svc = svm.SVC(kernel='linear').fit(i3train, o3trainClass)
-rbf_svc = svm.SVC(kernel='rbf').fit(i3train, o3trainClass)
-poly_svc = svm.SVC(kernel='poly',degree=2).fit(i3train, o3trainClass)
-
-L1=svc.predict(i3Ctest)
-L2=rbf_svc.predict(i3Ctest)
-L3=poly_svc.predict(i3Ctest)
-print('\n')
-
-# Linear SVM
-tp_svm_linear, fn_svm_linear, tn_svm_linear, fp_svm_linear = 0, 0, 0, 0
-# RBF SVM
-tp_svm_rbf, fn_svm_rbf, tn_svm_rbf, fp_svm_rbf = 0, 0, 0, 0
-# Poly SVM
-tp_svm_poly, fn_svm_poly, tn_svm_poly, fp_svm_poly = 0, 0, 0, 0
-
-nObsTest,nFea=i3Ctest.shape
-
-for i in range(nObsTest):
-    print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],Classes[L1[i]],Classes[L2[i]],Classes[L3[i]]))
-
-    # Linear SVM
-
-    if Classes[L1[i]] == Classes[o3testClass[i][0]]:
-        if Classes[L1[i]] == 'DNS':  # Positive class
-            tp_svm_linear += 1
-        else:  # Negative class
-            tn_svm_linear += 1
-    else:
-        if Classes[L1[i]] == 'DNS':
-            fn_svm_linear += 1
-        else:
-            fp_svm_linear += 1
-
-    # RBF SVM (Repetir a lógica similar para o kernel RBF)
-    if Classes[L2[i]] == Classes[o3testClass[i][0]]:
-        if Classes[L2[i]] == 'DNS':  # Positive class
-            tp_svm_rbf += 1
-        else:  # Negative class
-            tn_svm_rbf += 1
-    else:
-        if Classes[L2[i]] == 'DNS':
-            fn_svm_rbf += 1
-        else:
-            fp_svm_rbf += 1
-
-    # Poly SVM (Repetir a lógica similar para o kernel Poly)
-    if Classes[L3[i]] == Classes[o3testClass[i][0]]:
-        if Classes[L3[i]] == 'DNS':  # Positive class
-            tp_svm_poly += 1
-        else:  # Negative class
-            tn_svm_poly += 1
-    else:
-        if Classes[L3[i]] == 'DNS':
-            fn_svm_poly += 1
-        else:
-            fp_svm_poly += 1
+#     # Poly SVM (Repetir a lógica similar para o kernel Poly)
+#     if Classes[L3[i]] == Classes[o3testClass[i][0]]:
+#         if Classes[L3[i]] == 'DNS':  # Positive class
+#             tp_svm_poly += 1
+#         else:  # Negative class
+#             tn_svm_poly += 1
+#     else:
+#         if Classes[L3[i]] == 'DNS':
+#             fn_svm_poly += 1
+#         else:
+#             fp_svm_poly += 1
 
 
-accuracy_svm_linear = ((tp_svm_linear + tn_svm_linear) / (tp_svm_linear + tn_svm_linear + fp_svm_linear + fn_svm_linear))*100
-precision_svm_linear = (tp_svm_linear / (tp_svm_linear + fp_svm_linear))*100
+# accuracy_svm_linear = ((tp_svm_linear + tn_svm_linear) / (tp_svm_linear + tn_svm_linear + fp_svm_linear + fn_svm_linear))*100
+# precision_svm_linear = (tp_svm_linear / (tp_svm_linear + fp_svm_linear))*100
 
-accuracy_svm_rbf = ((tp_svm_rbf + tn_svm_rbf) / (tp_svm_rbf + tn_svm_rbf + fp_svm_rbf + fn_svm_rbf))*100
-precision_svm_rbf = (tp_svm_rbf / (tp_svm_rbf + fp_svm_rbf))*100
+# accuracy_svm_rbf = ((tp_svm_rbf + tn_svm_rbf) / (tp_svm_rbf + tn_svm_rbf + fp_svm_rbf + fn_svm_rbf))*100
+# precision_svm_rbf = (tp_svm_rbf / (tp_svm_rbf + fp_svm_rbf))*100
 
-accuracy_svm_poly = ((tp_svm_poly + tn_svm_poly) / (tp_svm_poly + tn_svm_poly + fp_svm_poly + fn_svm_poly))*100
-precision_svm_poly = (tp_svm_poly / (tp_svm_poly + fp_svm_poly))*100
+# accuracy_svm_poly = ((tp_svm_poly + tn_svm_poly) / (tp_svm_poly + tn_svm_poly + fp_svm_poly + fn_svm_poly))*100
+# precision_svm_poly = (tp_svm_poly / (tp_svm_poly + fp_svm_poly))*100
 
 
 
 
-# Imprimir as métricas para cada modelo SVM
-print("Metrics for Linear SVM:")
-print(f"True Positives (TP): {tp_svm_linear}")
-print(f"False Positives (FP): {fp_svm_linear}")
-print(f"True Negatives (TN): {tn_svm_linear}")
-print(f"False Negatives (FN): {fn_svm_linear}\n")
-print(f"Accuracy: {accuracy_svm_linear}")
-print(f"Precision: {precision_svm_linear}\n")
+# # Imprimir as métricas para cada modelo SVM
+# print("Metrics for Linear SVM:")
+# print(f"True Positives (TP): {tp_svm_linear}")
+# print(f"False Positives (FP): {fp_svm_linear}")
+# print(f"True Negatives (TN): {tn_svm_linear}")
+# print(f"False Negatives (FN): {fn_svm_linear}\n")
+# print(f"Accuracy: {accuracy_svm_linear}")
+# print(f"Precision: {precision_svm_linear}\n")
 
 
-print("Metrics for RBF SVM:")
-print(f"True Positives (TP): {tp_svm_rbf}")
-print(f"False Positives (FP): {fp_svm_rbf}")
-print(f"True Negatives (TN): {tn_svm_rbf}")
-print(f"False Negatives (FN): {fn_svm_rbf}\n")
-print(f"Accuracy: {accuracy_svm_rbf}")
-print(f"Precision: {precision_svm_rbf}\n")
-
-
-
-print("Metrics for Poly SVM:")
-print(f"True Positives (TP): {tp_svm_poly}")
-print(f"False Positives (FP): {fp_svm_poly}")
-print(f"True Negatives (TN): {tn_svm_poly}")
-print(f"False Negatives (FN): {fn_svm_poly}\n")
-print(f"Accuracy: {accuracy_svm_poly}")
-print(f"Precision: {precision_svm_poly}\n")
-
-
-## -- 12 Classification based on Neural Networks -- #########################################################################################################
-from sklearn.neural_network import MLPClassifier
-print('\n-- Classification based on Neural Networks --')
-i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
-i3Ctest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
-
-scaler = MaxAbsScaler().fit(i3train)
-i3trainN=scaler.transform(i3train)
-i3CtestN=scaler.transform(i3Ctest)
-
-
-alpha=1
-max_iter=100000
-clf = MLPClassifier(solver='lbfgs',alpha=alpha,hidden_layer_sizes=(20,),max_iter=max_iter)
-clf.fit(i3trainN, o3trainClass)
-LT=clf.predict(i3CtestN)
-
-# Neural Network
-tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
-acc_nn = []  # Lista para armazenar a acurácia
-pre_nn = []  # Lista para armazenar a precisão
-
-nObsTest,nFea=i3CtestN.shape
-for i in range(nObsTest):
-    print('Obs: {:2} ({:<8}): Classification->{}'.format(i,Classes[o3testClass[i][0]],Classes[LT[i]]))
-
-    if LT[i] == o3testClass[i][0]:
-        if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
-            tp_nn += 1
-        else:
-            tn_nn += 1
-    else:
-        if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
-            fp_nn += 1
-        else:
-            fn_nn += 1
-
-
-# Calcular a acurácia
-accuracy_nn = ((tp_nn + tn_nn) / (tp_nn + tn_nn + fp_nn + fn_nn))*100
-
-# Calcular a precisão
-precision_nn = (tp_nn / (tp_nn + fp_nn))*100
-
-# Adicionar os valores de acurácia e precisão às listas correspondentes
-acc_nn.append(accuracy_nn)
-pre_nn.append(precision_nn)
+# print("Metrics for RBF SVM:")
+# print(f"True Positives (TP): {tp_svm_rbf}")
+# print(f"False Positives (FP): {fp_svm_rbf}")
+# print(f"True Negatives (TN): {tn_svm_rbf}")
+# print(f"False Negatives (FN): {fn_svm_rbf}\n")
+# print(f"Accuracy: {accuracy_svm_rbf}")
+# print(f"Precision: {precision_svm_rbf}\n")
 
 
 
-# Imprimir os resultados
-print("Metrics for Neural Network:")
-print(f"True Positives (TP): {tp_nn}")
-print(f"False Positives (FP): {fp_nn}")
-print(f"True Negatives (TN): {tn_nn}")
-print(f"False Negatives (FN): {fn_nn}")
-print(f"Accuracy: {accuracy_nn:.2f}")
-print(f"Precision: {precision_nn:.2f}")
+# print("Metrics for Poly SVM:")
+# print(f"True Positives (TP): {tp_svm_poly}")
+# print(f"False Positives (FP): {fp_svm_poly}")
+# print(f"True Negatives (TN): {tn_svm_poly}")
+# print(f"False Negatives (FN): {fn_svm_poly}\n")
+# print(f"Accuracy: {accuracy_svm_poly}")
+# print(f"Precision: {precision_svm_poly}\n")
 
-# Wait for user input before exiting
-waitforEnter(fstop=True)
+
+
+
+
+#                                                                               ###### -- 10.2 Classification based on Support Vector Machines with PCA -- #####################################################################################
+# print('\n-- Classification based on Support Vector Machines --')
+
+# i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
+# i3Ctest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
+
+# # Define a range of components to test
+# components_to_test = [5, 10, 15, 20]  # Adjust as needed
+
+# for n_components in components_to_test:
+#     # Initialize PCA and fit-transform the data
+#     pca = PCA(n_components=n_components)
+#     i3train_pca = pca.fit_transform(i3train)
+#     i3Ctest_pca = pca.transform(i3Ctest)
+#     svc = svm.SVC(kernel='linear').fit(i3train, o3trainClass)
+#     rbf_svc = svm.SVC(kernel='rbf').fit(i3train, o3trainClass)
+#     poly_svc = svm.SVC(kernel='poly',degree=2).fit(i3train, o3trainClass)
+
+#     L1=svc.predict(i3Ctest)
+#     L2=rbf_svc.predict(i3Ctest)
+#     L3=poly_svc.predict(i3Ctest)
+#     print('\n')
+
+#     # Linear SVM
+#     tp_svm_linear, fn_svm_linear, tn_svm_linear, fp_svm_linear = 0, 0, 0, 0
+#     # RBF SVM
+#     tp_svm_rbf, fn_svm_rbf, tn_svm_rbf, fp_svm_rbf = 0, 0, 0, 0
+#     # Poly SVM
+#     tp_svm_poly, fn_svm_poly, tn_svm_poly, fp_svm_poly = 0, 0, 0, 0
+
+#     nObsTest,nFea=i3Ctest.shape
+
+#     for i in range(nObsTest):
+#         #print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],Classes[L1[i]],Classes[L2[i]],Classes[L3[i]]))
+#         # Linear SVM
+#         if Classes[L1[i]] == Classes[o3testClass[i][0]]:
+#             if Classes[L1[i]] == 'DNS':  # Positive class
+#                 tp_svm_linear += 1
+#             else:  # Negative class
+#                 tn_svm_linear += 1
+#         else:
+#             if Classes[L1[i]] == 'DNS':
+#                 fn_svm_linear += 1
+#             else:
+#                 fp_svm_linear += 1
+
+#         # RBF SVM (Repetir a lógica similar para o kernel RBF)
+#         if Classes[L2[i]] == Classes[o3testClass[i][0]]:
+#             if Classes[L2[i]] == 'DNS':  # Positive class
+#                 tp_svm_rbf += 1
+#             else:  # Negative class
+#                 tn_svm_rbf += 1
+#         else:
+#             if Classes[L2[i]] == 'DNS':
+#                 fn_svm_rbf += 1
+#             else:
+#                 fp_svm_rbf += 1
+
+#         # Poly SVM (Repetir a lógica similar para o kernel Poly)
+#         if Classes[L3[i]] == Classes[o3testClass[i][0]]:
+#             if Classes[L3[i]] == 'DNS':  # Positive class
+#                 tp_svm_poly += 1
+#             else:  # Negative class
+#                 tn_svm_poly += 1
+#         else:
+#             if Classes[L3[i]] == 'DNS':
+#                 fn_svm_poly += 1
+#             else:
+#                 fp_svm_poly += 1
+
+
+#      # Calculate Accuracy for Linear SVM
+#     accuracy_svm_linear = ((tp_svm_linear + tn_svm_linear) / (tp_svm_linear + tn_svm_linear + fp_svm_linear + fn_svm_linear)) * 100
+
+#     # Calculate Accuracy for RBF SVM
+#     accuracy_svm_rbf = ((tp_svm_rbf + tn_svm_rbf) / (tp_svm_rbf + tn_svm_rbf + fp_svm_rbf + fn_svm_rbf)) * 100
+
+#     # Calculate Accuracy for Poly SVM
+#     accuracy_svm_poly = ((tp_svm_poly + tn_svm_poly) / (tp_svm_poly + tn_svm_poly + fp_svm_poly + fn_svm_poly)) * 100
+
+#     precision_svm_linear = (tp_svm_linear / (tp_svm_linear + fp_svm_linear)) if (tp_svm_linear + fp_svm_linear) != 0 else 0
+#     recall_svm_linear = (tp_svm_linear / (tp_svm_linear + fn_svm_linear)) if (tp_svm_linear + fn_svm_linear) != 0 else 0
+#     f1_score_svm_linear = 2 * (precision_svm_linear * recall_svm_linear) / (precision_svm_linear + recall_svm_linear) if (precision_svm_linear + recall_svm_linear) != 0 else 0
+
+#     # Calculate F1 score for RBF SVM
+#     precision_svm_rbf = (tp_svm_rbf / (tp_svm_rbf + fp_svm_rbf)) if (tp_svm_rbf + fp_svm_rbf) != 0 else 0
+#     recall_svm_rbf = (tp_svm_rbf / (tp_svm_rbf + fn_svm_rbf)) if (tp_svm_rbf + fn_svm_rbf) != 0 else 0
+#     f1_score_svm_rbf = 2 * (precision_svm_rbf * recall_svm_rbf) / (precision_svm_rbf + recall_svm_rbf) if (precision_svm_rbf + recall_svm_rbf) != 0 else 0
+
+#     # Calculate F1 score for Poly SVM
+#     precision_svm_poly = (tp_svm_poly / (tp_svm_poly + fp_svm_poly)) if (tp_svm_poly + fp_svm_poly) != 0 else 0
+#     recall_svm_poly = (tp_svm_poly / (tp_svm_poly + fn_svm_poly)) if (tp_svm_poly + fn_svm_poly) != 0 else 0
+#     f1_score_svm_poly = 2 * (precision_svm_poly * recall_svm_poly) / (precision_svm_poly + recall_svm_poly) if (precision_svm_poly + recall_svm_poly) != 0 else 0
+
+#     # Print your metrics including F1 score for each SVM
+#     print(f"Metrics for Linear SVM with {n_components} components:")
+#     print(f"True Positives (TP): {tp_svm_linear}")
+#     print(f"False Positives (FP): {fp_svm_linear}")
+#     print(f"True Negatives (TN): {tn_svm_linear}")
+#     print(f"False Negatives (FN): {fn_svm_linear}")
+#     print(f"Accuracy: {accuracy_svm_linear}")
+#     print(f"Precision: {precision_svm_linear}")
+#     print(f"Recall: {recall_svm_linear}")
+#     print(f"F1 Score: {f1_score_svm_linear}\n")
+
+#     print(f"Metrics for RBF SVM with {n_components} components:")
+#     print(f"True Positives (TP): {tp_svm_rbf}")
+#     print(f"False Positives (FP): {fp_svm_rbf}")
+#     print(f"True Negatives (TN): {tn_svm_rbf}")
+#     print(f"False Negatives (FN): {fn_svm_rbf}")
+#     print(f"Accuracy: {accuracy_svm_rbf}")
+#     print(f"Precision: {precision_svm_rbf}")
+#     print(f"Recall: {recall_svm_rbf}")
+#     print(f"F1 Score: {f1_score_svm_rbf}\n")
+
+#     print(f"Metrics for Poly SVM with {n_components} components:")
+#     print(f"True Positives (TP): {tp_svm_poly}")
+#     print(f"False Positives (FP): {fp_svm_poly}")
+#     print(f"True Negatives (TN): {tn_svm_poly}")
+#     print(f"False Negatives (FN): {fn_svm_poly}")
+#     print(f"Accuracy: {accuracy_svm_poly}")
+#     print(f"Precision: {precision_svm_poly}")
+#     print(f"Recall: {recall_svm_poly}")
+#     print(f"F1 Score: {f1_score_svm_poly}\n")
+
+
+
+
+#                                                                       ######## -- 12 Classification based on Neural Networks without pca -- #########################################################################################################
+# from sklearn.neural_network import MLPClassifier
+# print('\n-- Classification based on Neural Networks --')
+# i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
+# i3Ctest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
+
+# scaler = MaxAbsScaler().fit(i3train)
+# i3trainN=scaler.transform(i3train)
+# i3CtestN=scaler.transform(i3Ctest)
+
+
+# alpha=1
+# max_iter=100000
+# clf = MLPClassifier(solver='lbfgs',alpha=alpha,hidden_layer_sizes=(20,),max_iter=max_iter)
+# clf.fit(i3trainN, o3trainClass)
+# LT=clf.predict(i3CtestN)
+
+# # Neural Network
+# tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
+# acc_nn = []  # Lista para armazenar a acurácia
+# pre_nn = []  # Lista para armazenar a precisão
+
+# nObsTest,nFea=i3CtestN.shape
+# for i in range(nObsTest):
+#     print('Obs: {:2} ({:<8}): Classification->{}'.format(i,Classes[o3testClass[i][0]],Classes[LT[i]]))
+
+#     if LT[i] == o3testClass[i][0]:
+#         if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
+#             tp_nn += 1
+#         else:
+#             tn_nn += 1
+#     else:
+#         if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
+#             fp_nn += 1
+#         else:
+#             fn_nn += 1
+
+
+# # Calcular a acurácia
+# accuracy_nn = ((tp_nn + tn_nn) / (tp_nn + tn_nn + fp_nn + fn_nn))*100
+
+# # Calcular a precisão
+# precision_nn = (tp_nn / (tp_nn + fp_nn))*100
+
+# # Adicionar os valores de acurácia e precisão às listas correspondentes
+# acc_nn.append(accuracy_nn)
+# pre_nn.append(precision_nn)
+
+
+
+# # Imprimir os resultados
+# print("Metrics for Neural Network:")
+# print(f"True Positives (TP): {tp_nn}")
+# print(f"False Positives (FP): {fp_nn}")
+# print(f"True Negatives (TN): {tn_nn}")
+# print(f"False Negatives (FN): {fn_nn}")
+# print(f"Accuracy: {accuracy_nn:.2f}")
+# print(f"Precision: {precision_nn:.2f}")
+
+# # Wait for user input before exiting
+# waitforEnter(fstop=True)
