@@ -239,382 +239,380 @@ testFeatures_dns=features_dns[pD:,:]
 i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
 o3testClass=np.vstack((oClass_bruno[pB:],oClass_marta[pM:],oClass_dns[pD:]))
 
-# ############################################## -- 7 -- Centroids Distances SEM PCA ######################### 
+############################################## -- 7 -- Centroids Distances SEM PCA ######################### 
 
-# i2train=np.vstack((trainFeatures_bruno,trainFeatures_marta))
-# #scaler = MaxAbsScaler().fit(i2train)
-# #i2train=scaler.transform(i2train)
-# results = []
+i2train=np.vstack((trainFeatures_bruno,trainFeatures_marta))
+#scaler = MaxAbsScaler().fit(i2train)
+#i2train=scaler.transform(i2train)
+results = []
 
-# centroids={}
-# for c in range(2):  # Only the first two classes (client classes)
-#     pClass=(o2trainClass==c).flatten()
-#     centroids.update({c:np.mean(i2train[pClass,:],axis=0)})
-# #print('All Features Centroids:\n',centroids)
+centroids={}
+for c in range(2):  # Only the first two classes (client classes)
+    pClass=(o2trainClass==c).flatten()
+    centroids.update({c:np.mean(i2train[pClass,:],axis=0)})
+#print('All Features Centroids:\n',centroids)
 
-# i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
-# #i3Atest=scaler.transform(i3Atest)
+i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
+#i3Atest=scaler.transform(i3Atest)
 
-# print('\n-- Anomaly Detection based on Centroids Distances without PCA --')
-# nObsTest,nFea=i3Atest.shape
+print('\n-- Anomaly Detection based on Centroids Distances without PCA --')
+nObsTest,nFea=i3Atest.shape
 
-# # Define a range of threshold values to test
-# threshold_values = [0.1,0.2,0.3,0.4,0.5,1.0,1.2, 1.1, 1.5, 2.0,3,5,6,10]  # Add more threshold values as needed
+# Define a range of threshold values to test
+threshold_values = [0.1,0.2,0.3,0.4,0.5,1.0,1.2, 1.1, 1.5, 2.0,3,5,6,10]  # Add more threshold values as needed
 
-# # Initialize lists to store evaluation metrics for each threshold
-# threshold_metrics = []
+# Initialize lists to store evaluation metrics for each threshold
+threshold_metrics = []
 
-# for AnomalyThreshold in threshold_values:
-#     # Initialize variables for TP, FP, TN, FN for the current threshold
-#     tp_centroids = 0
-#     fp_centroids = 0
-#     tn_centroids = 0
-#     fn_centroids = 0
+for AnomalyThreshold in threshold_values:
+    # Initialize variables for TP, FP, TN, FN for the current threshold
+    tp_centroids = 0
+    fp_centroids = 0
+    tn_centroids = 0
+    fn_centroids = 0
 
-#     # Perform anomaly detection based on the current threshold
-#     for i in range(nObsTest):
-#         x = i3Atest[i]
-#         dists = [distance(x, centroids[0]), distance(x, centroids[1])]
-#         if min(dists) > AnomalyThreshold:
-#             result = "Anomaly"
-#             if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
-#                 fn_centroids += 1  # False Negative
-#             else:
-#                 tn_centroids += 1  # True Negative
-#         else:
-#             result = "OK"
-#             if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
-#                 tp_centroids += 1  # True Positive
-#             else:
-#                 fp_centroids += 1  # False Positive
+    # Perform anomaly detection based on the current threshold
+    for i in range(nObsTest):
+        x = i3Atest[i]
+        dists = [distance(x, centroids[0]), distance(x, centroids[1])]
+        if min(dists) > AnomalyThreshold:
+            result = "Anomaly"
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
+                fn_centroids += 1  # False Negative
+            else:
+                tn_centroids += 1  # True Negative
+        else:
+            result = "OK"
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
+                tp_centroids += 1  # True Positive
+            else:
+                fp_centroids += 1  # False Positive
 
-#     # Calculate evaluation metrics for the current threshold
-#     accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
-#     precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
-#     recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (tp_centroids + fn_centroids) != 0 else 0
-#     f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (precision_centroids + recall_centroids))/100 if (precision_centroids + recall_centroids) != 0 else 0
+    # Calculate evaluation metrics for the current threshold
+    accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
+    precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
+    recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (tp_centroids + fn_centroids) != 0 else 0
+    f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (precision_centroids + recall_centroids))/100 if (precision_centroids + recall_centroids) != 0 else 0
 
-#     # Store metrics for the current threshold in the list
-#     results.append({
-#         'AnomalyThreshold': AnomalyThreshold,
-#         'TP': tp_centroids,
-#         'FP': fp_centroids,
-#         'TN': tn_centroids,
-#         'FN': fn_centroids,
-#         'Accuracy': accuracy_centroids,
-#         'Precision': precision_centroids,
-#         'Recall': recall_centroids,
-#         'F1 Score': f1_score_centroids
-#     })
+    # Store metrics for the current threshold in the list
+    results.append({
+        'AnomalyThreshold': AnomalyThreshold,
+        'TP': tp_centroids,
+        'FP': fp_centroids,
+        'TN': tn_centroids,
+        'FN': fn_centroids,
+        'Accuracy': accuracy_centroids,
+        'Precision': precision_centroids,
+        'Recall': recall_centroids,
+        'F1 Score': f1_score_centroids
+    })
 
-# # Crie um DataFrame a partir da lista de resultados
-# df = pd.DataFrame(results)
+# Crie um DataFrame a partir da lista de resultados
+df = pd.DataFrame(results)
 
-# # Salve o DataFrame em um arquivo Excel
-# df.to_excel('resultados_centroid.xlsx', index=False)
+# Salve o DataFrame em um arquivo Excel
+df.to_excel('resultados_centroid.xlsx', index=False)
                                                                        
 
 
-# ######################################## -- 7.2 -- Centroids Distances Com PCA ######################### ##
+######################################## -- 7.2 -- Centroids Distances Com PCA ######################### ##
 
-# print('\n-- Anomaly Detection based on Centroids Distances with PCA --')
-# components_to_test = [10, 15, 20,25,30]  # Adjust as needed
-# results = []
+print('\n-- Anomaly Detection based on Centroids Distances with PCA --')
+components_to_test = [10, 15, 20, 25, 30]  
+results = []
 
-# for n_components in components_to_test:
-#     i2train = np.vstack((trainFeatures_bruno, trainFeatures_marta))
-#     #scaler = MaxAbsScaler().fit(i2train)
-#     #i2train = scaler.transform(i2train)
+for n_components in components_to_test:
+    i2train = np.vstack((trainFeatures_bruno, trainFeatures_marta))
+    #scaler = MaxAbsScaler().fit(i2train)
+    #i2train = scaler.transform(i2train)
 
-#     # Initialize PCA and fit-transform the data
-#     pca = PCA(n_components=n_components)
-#     i2train_pca = pca.fit_transform(i2train)
+    # Initialize PCA and fit-transform the data
+    pca = PCA(n_components=n_components)
+    i2train_pca = pca.fit_transform(i2train)
 
-#     centroids = {}
-#     for c in range(2):  # Only the first two classes (client classes)
-#         pClass = (o2trainClass == c).flatten()
-#         centroids.update({c: np.mean(i2train_pca[pClass, :], axis=0)})
+    centroids = {}
+    for c in range(2):  # Only the first two classes (client classes)
+        pClass = (o2trainClass == c).flatten()
+        centroids.update({c: np.mean(i2train_pca[pClass, :], axis=0)})
 
-#     i3Atest = np.vstack((testFeatures_bruno, testFeatures_marta, testFeatures_dns))
-#     #i3Atest = scaler.transform(i3Atest)
-#     i3Atest_pca = pca.transform(i3Atest)
+    i3Atest = np.vstack((testFeatures_bruno, testFeatures_marta, testFeatures_dns))
+    #i3Atest = scaler.transform(i3Atest)
+    i3Atest_pca = pca.transform(i3Atest)
 
-#     print(f'\n-- Anomaly Detection based on Centroids Distances (Components: {n_components}) --')
-#     nObsTest, nFea = i3Atest_pca.shape
+    print(f'\n-- Anomaly Detection based on Centroids Distances (Components: {n_components}) --')
+    nObsTest, nFea = i3Atest_pca.shape
 
-#     # Define a range of threshold values to test
-#     threshold_values = [0.1,0.2,0.3,0.4,0.5,1.0,1.2, 1.1, 1.5, 2.0,3,5,6,10]  # Add more threshold values as needed
+    # Define a range of threshold values to test
+    threshold_values = [0.1,0.2,0.3,0.4,0.5,1.0,1.2, 1.1, 1.5, 2.0,3,5,6,10]  # Add more threshold values as needed
 
-#     # Initialize lists to store evaluation metrics for each threshold
-#     threshold_metrics = []
+    # Initialize lists to store evaluation metrics for each threshold
+    threshold_metrics = []
 
-#     for AnomalyThreshold in threshold_values:
-#         # Initialize variables for TP, FP, TN, FN for the current threshold
-#         tp_centroids = 0
-#         fp_centroids = 0
-#         tn_centroids = 0
-#         fn_centroids = 0
+    for AnomalyThreshold in threshold_values:
+        # Initialize variables for TP, FP, TN, FN for the current threshold
+        tp_centroids = 0
+        fp_centroids = 0
+        tn_centroids = 0
+        fn_centroids = 0
 
-#         # Perform anomaly detection based on the current threshold
-#         for i in range(nObsTest):
-#             x = i3Atest_pca[i]
-#             dists = [distance(x, centroids[0]), distance(x, centroids[1])]
-#             if min(dists) > AnomalyThreshold:
-#                 result = "Anomaly"
-#                 if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
-#                     fn_centroids += 1  # False Negative
-#                 else:
-#                     tn_centroids += 1  # True Negative
-#             else:
-#                 result = "OK"
-#                 if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
-#                     tp_centroids += 1  # True Positive
-#                 else:
-#                     fp_centroids += 1  # False Positive
+        # Perform anomaly detection based on the current threshold
+        for i in range(nObsTest):
+            x = i3Atest_pca[i]
+            dists = [distance(x, centroids[0]), distance(x, centroids[1])]
+            if min(dists) > AnomalyThreshold:
+                result = "Anomaly"
+                if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
+                    fn_centroids += 1  # False Negative
+                else:
+                    tn_centroids += 1  # True Negative
+            else:
+                result = "OK"
+                if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
+                    tp_centroids += 1  # True Positive
+                else:
+                    fp_centroids += 1  # False Positive
 
-#         # Calculate evaluation metrics for the current threshold
-#         accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
-#         precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
-#         recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (tp_centroids + fn_centroids) != 0 else 0
-#         f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (precision_centroids + recall_centroids)) / 100 if (precision_centroids + recall_centroids) != 0 else 0
+        # Calculate evaluation metrics for the current threshold
+        accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
+        precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
+        recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (tp_centroids + fn_centroids) != 0 else 0
+        f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (precision_centroids + recall_centroids)) / 100 if (precision_centroids + recall_centroids) != 0 else 0
 
-#         # Store metrics for the current threshold in the list
-#         results.append({
-#             'AnomalyThreshold': AnomalyThreshold,
-#             'Número de Componentes': n_components,  # Adicionando o número de componente
-#             'TP': tp_centroids,
-#             'FP': fp_centroids,
-#             'TN': tn_centroids,
-#             'FN': fn_centroids,
-#             'Accuracy': accuracy_centroids,
-#             'Precision': precision_centroids,
-#             'Recall': recall_centroids,
-#             'F1 Score': f1_score_centroids
-#         })
+        # Store metrics for the current threshold in the list
+        results.append({
+            'AnomalyThreshold': AnomalyThreshold,
+            'Número de Componentes': n_components,  # Adicionando o número de componente
+            'TP': tp_centroids,
+            'FP': fp_centroids,
+            'TN': tn_centroids,
+            'FN': fn_centroids,
+            'Accuracy': accuracy_centroids,
+            'Precision': precision_centroids,
+            'Recall': recall_centroids,
+            'F1 Score': f1_score_centroids
+        })
 
 
+# Crie um DataFrame a partir da lista de resultados
+df = pd.DataFrame(results)
+
+# Salve o DataFrame em um arquivo Excel
+df.to_excel('resultados_centroid_pca.xlsx', index=False)
+
+# ########################################## -- 8 -- Anomaly Detection based on One Class Support Vector Machines WITHOUT PCA ###############################
+
+print('\n-- Anomaly Detection based on One Class Support Vector Machines--')
+i2train=np.vstack((trainFeatures_marta,trainFeatures_bruno))
+i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
+
+nu=0.5
+ocsvm = svm.OneClassSVM(gamma='scale',kernel='linear',nu=nu).fit(i2train)
+rbf_ocsvm = svm.OneClassSVM(gamma='scale',kernel='rbf',nu=nu).fit(i2train)
+poly_ocsvm = svm. OneClassSVM(gamma='scale',kernel='poly',nu=nu,degree=2).fit(i2train)
+
+L1=ocsvm.predict(i3Atest)
+L2=rbf_ocsvm.predict(i3Atest)
+L3=poly_ocsvm.predict(i3Atest)
+
+AnomResults={-1:"Anomaly",1:"OK"}
+
+# 
+tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
+tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
+tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
+
+
+nObsTest,nFea=i3Atest.shape
+for i in range(nObsTest):
+    #print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],AnomResults[L1[i]],AnomResults[L2[i]],AnomResults[L3[i]]))
+    
+    # Linear
+    if AnomResults[L1[i]] == "Anomaly":
+        if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
+            fn_linear += 1
+        else:  # Negative class
+            tn_linear += 1
+    else: #OK
+        if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
+            tp_linear += 1
+        else:
+            fp_linear += 1
+
+    # RBF
+    if AnomResults[L2[i]] == "Anomaly":
+        if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
+            fn_rbf += 1
+        else: 
+            tn_rbf += 1
+    else: #OK
+        if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
+            tp_rbf += 1
+        else:
+            fp_rbf += 1
+
+    # Poly
+    if AnomResults[L3[i]] == "Anomaly":
+        if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
+            fn_poly += 1
+        else:  # Negative class
+            tn_poly += 1
+    else:
+        if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :
+            tp_poly += 1
+        else:
+            fp_poly += 1
+
+
+accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
+precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
+
+accuracy_rbf = ((tp_rbf + tn_rbf) / nObsTest) * 100
+precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
+
+accuracy_poly = ((tp_poly + tn_poly) / nObsTest) * 100
+precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
+
+recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
+recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
+recall_poly = (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0
+
+f1_score_linear = (2 * (precision_linear * recall_linear) / (precision_linear + recall_linear)) / 100 if (precision_linear + recall_linear) != 0 else 0
+f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf)) / 100 if (precision_rbf + recall_rbf) != 0 else 0
+f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_poly)) / 100 if (precision_poly + recall_poly) != 0 else 0
+
+
+results = {
+    'Method': ['Linear', 'RBF', 'Poly'],
+    'TP': [tp_linear, tp_rbf, tp_poly],
+    'FP': [fp_linear, fp_rbf, fp_poly],
+    'TN': [tn_linear, tn_rbf, tn_poly],
+    'FN': [fn_linear, fn_rbf, fn_poly],
+    'Accuracy': [accuracy_linear, accuracy_rbf, accuracy_poly],
+    'Precision': [precision_linear, precision_rbf, precision_poly],
+    'Recall': [recall_linear, recall_rbf, recall_poly],
+    'F1 Score': [f1_score_linear, f1_score_rbf, f1_score_poly],
+}
 # # Crie um DataFrame a partir da lista de resultados
-# df = pd.DataFrame(results)
+df = pd.DataFrame(results)
 
 # # Salve o DataFrame em um arquivo Excel
-# df.to_excel('resultados_centroid_pca.xlsx', index=False)
-
-# # ########################################## -- 8 -- Anomaly Detection based on One Class Support Vector Machines WITHOUT PCA ###############################
-
-# print('\n-- Anomaly Detection based on One Class Support Vector Machines--')
-# i2train=np.vstack((trainFeatures_marta,trainFeatures_bruno))
-# i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
-
-# nu=0.5
-# ocsvm = svm.OneClassSVM(gamma='scale',kernel='linear',nu=nu).fit(i2train)
-# rbf_ocsvm = svm.OneClassSVM(gamma='scale',kernel='rbf',nu=nu).fit(i2train)
-# poly_ocsvm = svm. OneClassSVM(gamma='scale',kernel='poly',nu=nu,degree=2).fit(i2train)
-
-# L1=ocsvm.predict(i3Atest)
-# L2=rbf_ocsvm.predict(i3Atest)
-# L3=poly_ocsvm.predict(i3Atest)
-
-# AnomResults={-1:"Anomaly",1:"OK"}
-
-# # 
-# tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
-# tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-# tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
+df.to_excel('resultados_OneClassSVM.xlsx', index=False)
 
 
-# nObsTest,nFea=i3Atest.shape
-# for i in range(nObsTest):
-#     #print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],AnomResults[L1[i]],AnomResults[L2[i]],AnomResults[L3[i]]))
+
+
+############################ -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
+
+n_components_list = [1, 5, 10, 15, 16, 17, 18, 19, 20, 21]
+
+results = []
+
+# Loop pelos diferentes números de componentes PCA
+for n_components in n_components_list:
+    # Reduzindo a dimensionalidade com PCA
+    pca = PCA(n_components=n_components)
+    i2train_pca = pca.fit_transform(i2train)
+    i3Atest_pca = pca.transform(i3Atest)
+
+    nu = 0.5
+    ocsvm = OneClassSVM(gamma='scale', kernel='linear', nu=nu).fit(i2train_pca)
+    rbf_ocsvm = OneClassSVM(gamma='scale', kernel='rbf', nu=nu).fit(i2train_pca)
+    poly_ocsvm = OneClassSVM(gamma='scale', kernel='poly', nu=nu, degree=2).fit(i2train_pca)
+
+    L1 = ocsvm.predict(i3Atest_pca)
+    L2 = rbf_ocsvm.predict(i3Atest_pca)
+    L3 = poly_ocsvm.predict(i3Atest_pca)
     
-#     # Linear
-#     if AnomResults[L1[i]] == "Anomaly":
-#         if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
-#             fn_linear += 1
-#         else:  # Negative class
-#             tn_linear += 1
-#     else: #OK
-#         if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
-#             tp_linear += 1
-#         else:
-#             fp_linear += 1
-
-#     # RBF
-#     if AnomResults[L2[i]] == "Anomaly":
-#         if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
-#             fn_rbf += 1
-#         else: 
-#             tn_rbf += 1
-#     else: #OK
-#         if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
-#             tp_rbf += 1
-#         else:
-#             fp_rbf += 1
-
-#     # Poly
-#     if AnomResults[L3[i]] == "Anomaly":
-#         if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
-#             fn_poly += 1
-#         else:  # Negative class
-#             tn_poly += 1
-#     else:
-#         if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :
-#             tp_poly += 1
-#         else:
-#             fp_poly += 1
-
-
-# total_samples = nObsTest  # O número total de amostras
-
-# accuracy_linear = ((tp_linear + tn_linear) / total_samples) * 100
-# precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
-
-# accuracy_rbf = ((tp_rbf + tn_rbf) / total_samples) * 100
-# precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
-
-# accuracy_poly = ((tp_poly + tn_poly) / total_samples) * 100
-# precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
-
-# recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
-# recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
-# recall_poly = (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0
-
-# f1_score_linear = (2 * (precision_linear * recall_linear) / (precision_linear + recall_linear)) / 100 if (precision_linear + recall_linear) != 0 else 0
-# f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf)) / 100 if (precision_rbf + recall_rbf) != 0 else 0
-# f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_poly)) / 100 if (precision_poly + recall_poly) != 0 else 0
-
-
-# results = {
-#     'Method': ['Linear', 'RBF', 'Poly'],
-#     'TP': [tp_linear, tp_rbf, tp_poly],
-#     'FP': [fp_linear, fp_rbf, fp_poly],
-#     'TN': [tn_linear, tn_rbf, tn_poly],
-#     'FN': [fn_linear, fn_rbf, fn_poly],
-#     'Accuracy': [accuracy_linear, accuracy_rbf, accuracy_poly],
-#     'Precision': [precision_linear, precision_rbf, precision_poly],
-#     'Recall': [recall_linear, recall_rbf, recall_poly],
-#     'F1 Score': [f1_score_linear, f1_score_rbf, f1_score_poly],
-# }
-# # # Crie um DataFrame a partir da lista de resultados
-# df = pd.DataFrame(results)
-
-# # # Salve o DataFrame em um arquivo Excel
-# df.to_excel('resultados_OneClassSVM.xlsx', index=False)
-
-
-
-
-# ############################ -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
-
-# n_components_list = [1, 5, 10, 15, 16, 17, 18, 19, 20, 21]
-
-# results = []
-
-# # Loop pelos diferentes números de componentes PCA
-# for n_components in n_components_list:
-#     # Reduzindo a dimensionalidade com PCA
-#     pca = PCA(n_components=n_components)
-#     i2train_pca = pca.fit_transform(i2train)
-#     i3Atest_pca = pca.transform(i3Atest)
-
-#     nu = 0.5
-#     ocsvm = OneClassSVM(gamma='scale', kernel='linear', nu=nu).fit(i2train_pca)
-#     rbf_ocsvm = OneClassSVM(gamma='scale', kernel='rbf', nu=nu).fit(i2train_pca)
-#     poly_ocsvm = OneClassSVM(gamma='scale', kernel='poly', nu=nu, degree=2).fit(i2train_pca)
-
-#     L1 = ocsvm.predict(i3Atest_pca)
-#     L2 = rbf_ocsvm.predict(i3Atest_pca)
-#     L3 = poly_ocsvm.predict(i3Atest_pca)
+    # Calculando as métricas para Linear
+    tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
+    tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
+    tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
     
-#     # Calculando as métricas para Linear
-#     tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
-#     tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-#     tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
-    
-#     AnomResults={-1:"Anomaly",1:"OK"}
+    AnomResults={-1:"Anomaly",1:"OK"}
 
-#     nObsTest,nFea=i3Atest_pca.shape
-#     for i in range(nObsTest):
-#         if L1[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-#             tp_linear += 1
-#         elif L1[i] == 1 and (o3testClass[i][0] == 2) :
-#             fp_linear += 1
-#         elif L1[i] != 1 and (o3testClass[i][0] == 2) :
-#             tn_linear += 1
-#         elif L1[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-#             fn_linear += 1
+    nObsTest,nFea=i3Atest_pca.shape
+    for i in range(nObsTest):
+        if L1[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
+            tp_linear += 1
+        elif L1[i] == 1 and (o3testClass[i][0] == 2) :
+            fp_linear += 1
+        elif L1[i] != 1 and (o3testClass[i][0] == 2) :
+            tn_linear += 1
+        elif L1[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
+            fn_linear += 1
         
-#         if L2[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0) :
-#             tp_rbf += 1
-#         elif L2[i] == 1 and (o3testClass[i][0] == 2) :
-#             fp_rbf += 1
-#         elif L2[i] != 1 and (o3testClass[i][0] == 2) :
-#             tn_rbf += 1
-#         elif L2[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-#             fn_rbf += 1
+        if L2[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0) :
+            tp_rbf += 1
+        elif L2[i] == 1 and (o3testClass[i][0] == 2) :
+            fp_rbf += 1
+        elif L2[i] != 1 and (o3testClass[i][0] == 2) :
+            tn_rbf += 1
+        elif L2[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
+            fn_rbf += 1
             
-#         if L3[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-#             tp_poly += 1
-#         elif L3[i] == 1 and (o3testClass[i][0] == 2) :
-#             fp_poly += 1
-#         elif L3[i] != 1 and (o3testClass[i][0] == 2):
-#             tn_poly += 1
-#         elif L3[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-#             fn_poly += 1
+        if L3[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
+            tp_poly += 1
+        elif L3[i] == 1 and (o3testClass[i][0] == 2) :
+            fp_poly += 1
+        elif L3[i] != 1 and (o3testClass[i][0] == 2):
+            tn_poly += 1
+        elif L3[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
+            fn_poly += 1
     
-#     accuracy_linear = ((tp_linear + tn_linear) / len(L1)) * 100
-#     precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
+    accuracy_linear = ((tp_linear + tn_linear) / len(L1)) * 100
+    precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
     
-#     accuracy_poly = ((tp_poly + tn_poly) / len(L3)) * 100
-#     precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
+    accuracy_poly = ((tp_poly + tn_poly) / len(L3)) * 100
+    precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
     
-#     accuracy_rbf = ((tp_rbf + tn_rbf) / len(L2)) * 100
-#     precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
+    accuracy_rbf = ((tp_rbf + tn_rbf) / len(L2)) * 100
+    precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
     
-#     # Salvando os resultados em uma lista
-#     results.append({
-#         'Components': n_components,
-#         'Method': 'Linear',
-#         'TP': tp_linear,
-#         'FP': fp_linear,
-#         'TN': tn_linear,
-#         'FN': fn_linear,
-#         'Accuracy': accuracy_linear,
-#         'Precision': precision_linear,
-#         'Recall': (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0,
-#         'F1 Score': (2 * (precision_linear * (tp_linear / (tp_linear + fn_linear))) / (precision_linear + (tp_linear / (tp_linear + fn_linear)))) / 100 if precision_linear + (tp_linear / (tp_linear + fn_linear)) != 0 else 0
-#     })
+    # Salvando os resultados em uma lista
+    results.append({
+        'Components': n_components,
+        'Method': 'Linear',
+        'TP': tp_linear,
+        'FP': fp_linear,
+        'TN': tn_linear,
+        'FN': fn_linear,
+        'Accuracy': accuracy_linear,
+        'Precision': precision_linear,
+        'Recall': (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0,
+        'F1 Score': (2 * (precision_linear * (tp_linear / (tp_linear + fn_linear))) / (precision_linear + (tp_linear / (tp_linear + fn_linear)))) / 100 if precision_linear + (tp_linear / (tp_linear + fn_linear)) != 0 else 0
+    })
     
-#     results.append({
-#         'Components': n_components,
-#         'Method': 'RBF',
-#         'TP': tp_rbf,
-#         'FP': fp_rbf,
-#         'TN': tn_rbf,
-#         'FN': fn_rbf,
-#         'Accuracy': accuracy_rbf,
-#         'Precision': precision_rbf,
-#         'Recall': (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0,
-#         'F1 Score': (2 * (precision_rbf * (tp_rbf / (tp_rbf + fn_rbf))) / (precision_rbf + (tp_rbf / (tp_rbf + fn_rbf)))) / 100 if precision_rbf + (tp_rbf / (tp_rbf + fn_rbf)) != 0 else 0
-#     })
+    results.append({
+        'Components': n_components,
+        'Method': 'RBF',
+        'TP': tp_rbf,
+        'FP': fp_rbf,
+        'TN': tn_rbf,
+        'FN': fn_rbf,
+        'Accuracy': accuracy_rbf,
+        'Precision': precision_rbf,
+        'Recall': (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0,
+        'F1 Score': (2 * (precision_rbf * (tp_rbf / (tp_rbf + fn_rbf))) / (precision_rbf + (tp_rbf / (tp_rbf + fn_rbf)))) / 100 if precision_rbf + (tp_rbf / (tp_rbf + fn_rbf)) != 0 else 0
+    })
 
-#     results.append({
-#         'Components': n_components,
-#         'Method': 'Poly',
-#         'TP': tp_poly,
-#         'FP': fp_poly,
-#         'TN': tn_poly,
-#         'FN': fn_poly,
-#         'Accuracy': accuracy_poly,
-#         'Precision': precision_poly,
-#         'Recall': (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0,
-#         'F1 Score': (2 * (precision_poly * (tp_poly / (tp_poly + fn_poly))) / (precision_poly + (tp_poly / (tp_poly + fn_poly)))) / 100 if precision_poly + (tp_poly / (tp_poly + fn_poly)) != 0 else 0
-#     })
+    results.append({
+        'Components': n_components,
+        'Method': 'Poly',
+        'TP': tp_poly,
+        'FP': fp_poly,
+        'TN': tn_poly,
+        'FN': fn_poly,
+        'Accuracy': accuracy_poly,
+        'Precision': precision_poly,
+        'Recall': (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0,
+        'F1 Score': (2 * (precision_poly * (tp_poly / (tp_poly + fn_poly))) / (precision_poly + (tp_poly / (tp_poly + fn_poly)))) / 100 if precision_poly + (tp_poly / (tp_poly + fn_poly)) != 0 else 0
+    })
 
-# # Criando um DataFrame a partir dos resultados
-# df = pd.DataFrame(results)
+# Criando um DataFrame a partir dos resultados
+df = pd.DataFrame(results)
 
-# # Salvando o DataFrame em um arquivo Excel
-# df.to_excel('resultados_OneClassseSvm_pca.xlsx', index=False)
+# Salvando o DataFrame em um arquivo Excel
+df.to_excel('resultados_OneClassseSvm_pca.xlsx', index=False)
 
 
 
@@ -727,7 +725,7 @@ i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
 i3Ctest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
 
 # Define a range of components to test
-components_to_test = [5, 10, 15, 20]  # Adjust as needed
+components_to_test = [5, 10, 15, 20]  
 results=[]
 for n_components in components_to_test:
     # Initialize PCA and fit-transform the data
@@ -857,13 +855,13 @@ LT=clf.predict(i3CtestN)
 
 # Neural Network
 tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
-acc_nn = []  # Lista para armazenar a acurácia
-pre_nn = []  # Lista para armazenar a precisão
+acc_nn = []  
+pre_nn = []  
 results=[]
 nObsTest,nFea=i3CtestN.shape
+
 for i in range(nObsTest):
     #print('Obs: {:2} ({:<8}): Classification->{}'.format(i,Classes[o3testClass[i][0]],Classes[LT[i]]))
-    #print(LT[i])
     if LT[i] == o3testClass[i][0]:
         if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
             tn_nn += 1
@@ -876,16 +874,9 @@ for i in range(nObsTest):
             fp_nn += 1
 
 
-# Calcular a acurácia
 accuracy_nn = ((tp_nn + tn_nn) / (tp_nn + tn_nn + fp_nn + fn_nn)) * 100
-
-# Calcular a precisão
 precision_nn = (tp_nn / (tp_nn + fp_nn)) * 100 if (tp_nn + fp_nn) != 0 else 0
-
-# Calcular o recall
 recall_nn = (tp_nn / (tp_nn + fn_nn)) * 100 if (tp_nn + fn_nn) != 0 else 0
-
-# Calcular o F1 Score
 f1_score_nn = (2 * (precision_nn * recall_nn)) / (precision_nn + recall_nn) if (precision_nn + recall_nn) != 0 else 0
 
 results.append({
@@ -905,7 +896,7 @@ df_svm.to_excel('resultados_redes_neurais.xlsx', index=False)
 
 components_to_test = [1,5, 10, 15, 20]
 
-results = []  # Lista para armazenar os resultados
+results = []  
 
 for n_components in components_to_test:
     pca = PCA(n_components=n_components)
@@ -923,10 +914,10 @@ for n_components in components_to_test:
     LT = clf.predict(i3CtestN_pca)
 
     tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
-    acc_nn = []  # Lista para armazenar a acurácia
-    pre_nn = []  # Lista para armazenar a precisão
-
+    acc_nn = [] 
+    pre_nn = [] 
     nObsTest, nFea = i3CtestN_pca.shape
+
     for i in range(nObsTest):
         if LT[i] == o3testClass[i][0]:
             if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
