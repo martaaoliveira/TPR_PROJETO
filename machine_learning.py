@@ -90,7 +90,7 @@ nfig=1
 ## -- 2 -- ##
 features_bruno=np.loadtxt("features_bruno.dat")
 features_marta=np.loadtxt("features_marta.dat")
-features_dns=np.loadtxt("features_dns_tunneling.dat")
+features_dns=np.loadtxt("features_dns_tunneling_smart.dat")
 
 #It assigns class labels (0 for Bruno, 1 for Marta, and 2 for dns_tunneling) to the respective datasets
 #cada classe vai conter:mean, median and standard deviation  and also the silence periods features(mean median and deviation) and percentis for upload and download 
@@ -104,6 +104,11 @@ features=np.vstack((features_marta,features_bruno,features_dns))
 print("oclass\n")
 #um único array oClass que contém todas as classes correspondentes às observações do conjunto de dados combinado features.
 oClass=np.vstack((oClass_marta,oClass_bruno,oClass_dns))
+
+scaler = MaxAbsScaler().fit(features)
+features_scaled=scaler.transform(features)
+
+
 #print(oClass)
 
 # nPktUp BytesUp nPktDown BytesDown
@@ -137,26 +142,67 @@ oClass=np.vstack((oClass_marta,oClass_bruno,oClass_dns))
 
 #print('Train Silence Features Size:',features.shape)
 
-# plt.figure(2)
-# plotFeatures(features,oClass,0,22) #maximo  nPktUp vs maximo  nPktDown
-# plt.title('Comparação entre máximo nPktUp e máximo nPktDown')
+
+#Para a primeira captura do script dumb de dns tunneling os valores de download sao muito mais elevados do que o comportamento normal -> exfiltração de dados 
+#script mais inteligente->mostra que o maximo de download é baixo e os valores estao na mesma faixa 
+plt.figure(1)
+plt.scatter(features_bruno[:, 0], features_bruno[:, 22], c='blue', label='Bruno')
+plt.scatter(features_marta[:, 0], features_marta[:, 22], c='green', label='Marta')
+plt.scatter(features_dns[:, 0], features_dns[:, 22], c='red', label='DNS Tunneling')
+plt.title('Comparação entre maximo  nPkt vs maximo  nPktDown')
+plt.xlabel('maximo  nPkt')  # Rótulo do eixo x
+plt.ylabel('maximo  nPktDown')  # Rótulo do eixo y
+plt.legend(loc='lower right', title='Classes')
 
 
-# plt.figure(4)
-# plotFeatures(features,oClass,1,3) #media nPktUp e desvio padrao nPktUp
-# plt.title('Comparação entre média nPktUp e desvio padrão nPktUp')
+#------------------------------------------------------
+#Comparação entre média nPktDown e desvio padrão nPktDown
+#quantidade de pacotes de upload varia consideravelmente entre diferentes pontos de medição, o que se reflete no aumento do desvio padrão. Existe uma grande quantidade de 
+#downloads anormal relativamente ao bom comportamento
+plt.figure(2)
+plt.scatter(features_bruno[:, 23], features_bruno[:, 25], c='blue', label='Bruno')
+plt.scatter(features_marta[:, 23], features_marta[:, 25], c='green', label='Marta')
+plt.scatter(features_dns[:, 23], features_dns[:, 25], c='red', label='DNS Tunneling')
+plt.title('Comparação entre média nPktDown e desvio padrão nPktDown')
+plt.xlabel('média nPktDown')  # Rótulo do eixo x
+plt.ylabel('desvio padrão nPktDown')  # Rótulo do eixo y
+plt.legend(loc='lower right', title='Classes')
 
-# plt.figure(5)
-# plotFeatures(features,oClass,5,6) #Comparar media silencio nPktUp com media desvio padrao nPktUp
-# plt.title('Comparação entre média de silêncio nPktUp e desvio padrão silêncio nPktUp')
+#------------------------------------------------------
+
+#Comparar media silencio nPktUp com media desvio padrao nPktUp
+#Convem ver sempre features relativamente ao download ja que estamos no caso de extração de dados -> mais coerente
+#No caso do bom comportamento existe claramente um comportamento humano pois não existe uma linearidade de valores, resultados mais espaçados, maior numero de silencios -> explicar que
+#cada um fez um tipo de browing e dessa forma tem um comportamento diferente (eu tinha add block)
+#para o caso do dns_tunneling_burro não existe tanta diferença entre a media e o desvio padrao e existe menos silencio -> extração de dados sem limite
+plt.figure(3)
+# Plotagem dos pontos por classe com cores específicas
+plt.scatter(features_bruno[:, 27], features_bruno[:, 28], c='blue', label='Bruno')
+plt.scatter(features_marta[:, 27], features_marta[:, 28], c='green', label='Marta')
+plt.scatter(features_dns[:, 27], features_dns[:, 28], c='red', label='DNS Tunneling')
+plt.title('Comparação entre média de silêncio nPktDown e desvio padrão silêncio nPktDown')
+plt.xlabel('média silêncio nPktDown')  # Rótulo do eixo x
+plt.ylabel('desvio padrão silêncio nPktDown')  # Rótulo do eixo y
+plt.legend(loc='lower right', title='Classes')
 
 
-# plt.figure(8)
-# plotFeatures(features,oClass,12,34) #media BytesUp e media BytesDown
-
-# plt.figure(9)
-# plotFeatures(features,oClass,21,43) #percentis 98 BytesUp e percentis 98 BytesDown
-
+#------------------------------------------------------
+#Comparação entre desvio BytesDown e percentis 98 BytesDown
+# Dispersão dos Dados: Um desvio padrão maior indica maior variabilidade nos dados. 
+# Se o desvio padrão for alto e o percentil 98 também for alto, isso sugere que os dados possuem uma ampla dispersão em torno da média e que há uma presença 
+# significativa de valores extremos.
+# Outliers: Se o percentil 98 for muito maior do que o desvio padrão, isso pode indicar a presença de outliers, ou seja, valores extremamente altos que estão distantes da média. 
+# Isso pode ser significativo para entender situações em que ocorrem transferências de grandes volumes de dados em comparação com a maioria dos casos.
+# Estabilidade dos Dados: Um desvio padrão pequeno em relação ao percentil 98 sugere uma menor variabilidade nos dados, 
+# indicando maior estabilidade nos volumes de dados transferidos na maioria dos casos.
+plt.figure(4)
+plt.scatter(features_bruno[:, 36], features_bruno[:, 43], c='blue', label='Bruno')
+plt.scatter(features_marta[:, 36], features_marta[:, 43], c='green', label='Marta')
+plt.scatter(features_dns[:, 36], features_dns[:, 43], c='red', label='DNS Tunneling')
+plt.title('Comparação entre desvio BytesDown e percentis 98 BytesDown')
+plt.xlabel('desvio BytesDown ')  # Rótulo do eixo x
+plt.ylabel('percentis 98 BytesDown')  # Rótulo do eixo y
+plt.legend(loc='lower right', title='Classes')
 
 
 #divisão do conjunto de dados em dados de treino e de teste.
@@ -270,97 +316,97 @@ o3testClass=np.vstack((oClass_bruno[pB:],oClass_marta[pM:],oClass_dns[pD:]))
 #     print("-------------------")
 
 
-#                                                                                    ######## -- 7.2 -- Centroids Distances Com PCA ######################### ##
-# Define a range of components to test
-components_to_test = [10, 15, 20]  # Adjust as needed
-print('\n-- Anomaly Detection based on Centroids Distances with PCA --')
+# #                                                                                    ######## -- 7.2 -- Centroids Distances Com PCA ######################### ##
+# # Define a range of components to test
+# components_to_test = [10, 15, 20]  # Adjust as needed
+# print('\n-- Anomaly Detection based on Centroids Distances with PCA --')
 
-for n_components in components_to_test:
-    i2train = np.vstack((trainFeatures_bruno, trainFeatures_marta))
-    #scaler = MaxAbsScaler().fit(i2train)
-    #i2train = scaler.transform(i2train)
+# for n_components in components_to_test:
+#     i2train = np.vstack((trainFeatures_bruno, trainFeatures_marta))
+#     #scaler = MaxAbsScaler().fit(i2train)
+#     #i2train = scaler.transform(i2train)
 
-    # Initialize PCA and fit-transform the data
-    pca = PCA(n_components=n_components)
-    i2train_pca = pca.fit_transform(i2train)
+#     # Initialize PCA and fit-transform the data
+#     pca = PCA(n_components=n_components)
+#     i2train_pca = pca.fit_transform(i2train)
 
-    centroids = {}
-    for c in range(2):  # Only the first two classes (client classes)
-        pClass = (o2trainClass == c).flatten()
-        centroids.update({c: np.mean(i2train_pca[pClass, :], axis=0)})
+#     centroids = {}
+#     for c in range(2):  # Only the first two classes (client classes)
+#         pClass = (o2trainClass == c).flatten()
+#         centroids.update({c: np.mean(i2train_pca[pClass, :], axis=0)})
 
-    i3Atest = np.vstack((testFeatures_bruno, testFeatures_marta, testFeatures_dns))
-    #i3Atest = scaler.transform(i3Atest)
-    i3Atest_pca = pca.transform(i3Atest)
+#     i3Atest = np.vstack((testFeatures_bruno, testFeatures_marta, testFeatures_dns))
+#     #i3Atest = scaler.transform(i3Atest)
+#     i3Atest_pca = pca.transform(i3Atest)
 
-    print(f'\n-- Anomaly Detection based on Centroids Distances (Components: {n_components}) --')
-    nObsTest, nFea = i3Atest_pca.shape
+#     print(f'\n-- Anomaly Detection based on Centroids Distances (Components: {n_components}) --')
+#     nObsTest, nFea = i3Atest_pca.shape
 
-    # Define a range of threshold values to test
-    threshold_values = [0.5,1,2]  # Add more threshold values as needed
+#     # Define a range of threshold values to test
+#     threshold_values = [0.5,1,2]  # Add more threshold values as needed
 
-    # Initialize lists to store evaluation metrics for each threshold
-    threshold_metrics = []
+#     # Initialize lists to store evaluation metrics for each threshold
+#     threshold_metrics = []
 
-    for AnomalyThreshold in threshold_values:
-        # Initialize variables for TP, FP, TN, FN for the current threshold
-        tp_centroids = 0
-        fp_centroids = 0
-        tn_centroids = 0
-        fn_centroids = 0
+#     for AnomalyThreshold in threshold_values:
+#         # Initialize variables for TP, FP, TN, FN for the current threshold
+#         tp_centroids = 0
+#         fp_centroids = 0
+#         tn_centroids = 0
+#         fn_centroids = 0
 
-        # Perform anomaly detection based on the current threshold
-        for i in range(nObsTest):
-            x = i3Atest_pca[i]
-            dists = [distance(x, centroids[0]), distance(x, centroids[1])]
-            if min(dists) > AnomalyThreshold:
-                result = "Anomaly"
-                if o3testClass[i][0] == 1:  # Positive class
-                    fn_centroids += 1  # False Negative
-                else:
-                    tn_centroids += 1  # True Negative
-            else:
-                result = "OK"
-                if o3testClass[i][0] == 1:  # Positive class
-                    tp_centroids += 1  # True Positive
-                else:
-                    fp_centroids += 1  # False Positive
+#         # Perform anomaly detection based on the current threshold
+#         for i in range(nObsTest):
+#             x = i3Atest_pca[i]
+#             dists = [distance(x, centroids[0]), distance(x, centroids[1])]
+#             if min(dists) > AnomalyThreshold:
+#                 result = "Anomaly"
+#                 if o3testClass[i][0] == 1:  # Positive class
+#                     fn_centroids += 1  # False Negative
+#                 else:
+#                     tn_centroids += 1  # True Negative
+#             else:
+#                 result = "OK"
+#                 if o3testClass[i][0] == 1:  # Positive class
+#                     tp_centroids += 1  # True Positive
+#                 else:
+#                     fp_centroids += 1  # False Positive
 
-        # Calculate evaluation metrics for the current threshold
-        accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
-        precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (
-                    tp_centroids + fp_centroids) != 0 else 0
-        recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (
-                    tp_centroids + fn_centroids) != 0 else 0
-        f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (
-                    precision_centroids + recall_centroids)) / 100 if (
-                                        precision_centroids + recall_centroids) != 0 else 0
+#         # Calculate evaluation metrics for the current threshold
+#         accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
+#         precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (
+#                     tp_centroids + fp_centroids) != 0 else 0
+#         recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (
+#                     tp_centroids + fn_centroids) != 0 else 0
+#         f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (
+#                     precision_centroids + recall_centroids)) / 100 if (
+#                                         precision_centroids + recall_centroids) != 0 else 0
 
-        # Store metrics for the current threshold in the list
-        threshold_metrics.append({
-            'AnomalyThreshold': AnomalyThreshold,
-            'TP': tp_centroids,
-            'FP': fp_centroids,
-            'TN': tn_centroids,
-            'FN': fn_centroids,
-            'Accuracy': accuracy_centroids,
-            'Precision': precision_centroids,
-            'Recall': recall_centroids,
-            'F1 Score': f1_score_centroids
-        })
+#         # Store metrics for the current threshold in the list
+#         threshold_metrics.append({
+#             'AnomalyThreshold': AnomalyThreshold,
+#             'TP': tp_centroids,
+#             'FP': fp_centroids,
+#             'TN': tn_centroids,
+#             'FN': fn_centroids,
+#             'Accuracy': accuracy_centroids,
+#             'Precision': precision_centroids,
+#             'Recall': recall_centroids,
+#             'F1 Score': f1_score_centroids
+#         })
 
-    # Print metrics for each threshold
-    for metric in threshold_metrics:
-        print(f"Anomaly Threshold: {metric['AnomalyThreshold']}")
-        print(f"True Positives (TP): {metric['TP']}")
-        print(f"False Negatives (FN): {metric['FN']}")
-        print(f"False Positives (FP): {metric['FP']}")
-        print(f"True Negatives (TN): {metric['TN']}")
-        print(f"Accuracy: {metric['Accuracy']}")
-        print(f"Precision: {metric['Precision']}")
-        print(f"Recall: {metric['Recall']}")
-        print(f"F1 Score: {metric['F1 Score']}")
-        print("-------------------")
+#     # Print metrics for each threshold
+#     for metric in threshold_metrics:
+#         print(f"Anomaly Threshold: {metric['AnomalyThreshold']}")
+#         print(f"True Positives (TP): {metric['TP']}")
+#         print(f"False Negatives (FN): {metric['FN']}")
+#         print(f"False Positives (FP): {metric['FP']}")
+#         print(f"True Negatives (TN): {metric['TN']}")
+#         print(f"Accuracy: {metric['Accuracy']}")
+#         print(f"Precision: {metric['Precision']}")
+#         print(f"Recall: {metric['Recall']}")
+#         print(f"F1 Score: {metric['F1 Score']}")
+#         print("-------------------")
 
 
 #                                                                           # -- 8 -- Anomaly Detection based on One Class Support Vector Machines WITHOUT PCA ###############################
@@ -813,4 +859,4 @@ for n_components in components_to_test:
 # print(f"Precision: {precision_nn:.2f}")
 
 # # Wait for user input before exiting
-# waitforEnter(fstop=True)
+waitforEnter(fstop=True)
