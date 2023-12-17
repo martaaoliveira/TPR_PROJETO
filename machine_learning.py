@@ -532,41 +532,58 @@ for n_components in n_components_list:
 
     nObsTest,nFea=i3Atest_pca.shape
     for i in range(nObsTest):
-        if L1[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-            tp_linear += 1
-        elif L1[i] == 1 and (o3testClass[i][0] == 2) :
-            fp_linear += 1
-        elif L1[i] != 1 and (o3testClass[i][0] == 2) :
-            tn_linear += 1
-        elif L1[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-            fn_linear += 1
-        
-        if L2[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0) :
-            tp_rbf += 1
-        elif L2[i] == 1 and (o3testClass[i][0] == 2) :
-            fp_rbf += 1
-        elif L2[i] != 1 and (o3testClass[i][0] == 2) :
-            tn_rbf += 1
-        elif L2[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-            fn_rbf += 1
-            
-        if L3[i] == 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-            tp_poly += 1
-        elif L3[i] == 1 and (o3testClass[i][0] == 2) :
-            fp_poly += 1
-        elif L3[i] != 1 and (o3testClass[i][0] == 2):
-            tn_poly += 1
-        elif L3[i] != 1 and (o3testClass[i][0] == 1 or o3testClass[i][0]==0):
-            fn_poly += 1
+        # Linear
+        if AnomResults[L1[i]] == "Anomaly":
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
+                fn_linear += 1
+            else:  # Negative class
+                tn_linear += 1
+        else: #OK
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
+                tp_linear += 1
+            else:
+                fp_linear += 1
+
+        # RBF
+        if AnomResults[L2[i]] == "Anomaly":
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
+                fn_rbf += 1
+            else: 
+                tn_rbf += 1
+        else: #OK
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
+                tp_rbf += 1
+            else:
+                fp_rbf += 1
+
+        # Poly
+        if AnomResults[L3[i]] == "Anomaly":
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
+                fn_poly += 1
+            else:  # Negative class
+                tn_poly += 1
+        else:
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :
+                tp_poly += 1
+            else:
+                fp_poly += 1
     
-    accuracy_linear = ((tp_linear + tn_linear) / len(L1)) * 100
+    accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
     precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
-    
-    accuracy_poly = ((tp_poly + tn_poly) / len(L3)) * 100
-    precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
-    
-    accuracy_rbf = ((tp_rbf + tn_rbf) / len(L2)) * 100
+
+    accuracy_rbf = ((tp_rbf + tn_rbf) / nObsTest) * 100
     precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
+
+    accuracy_poly = ((tp_poly + tn_poly) / nObsTest) * 100
+    precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
+
+    recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
+    recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
+    recall_poly = (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0
+
+    f1_score_linear = (2 * (precision_linear * recall_linear) / (precision_linear + recall_linear)) / 100 if (precision_linear + recall_linear) != 0 else 0
+    f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf)) / 100 if (precision_rbf + recall_rbf) != 0 else 0
+    f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_poly)) / 100 if (precision_poly + recall_poly) != 0 else 0
     
     # Salvando os resultados em uma lista
     results.append({
