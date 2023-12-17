@@ -35,11 +35,8 @@ def waitforEnter(fstop=False):
 ## -- 3 -- ##
 
 # features: É a matriz de características (ou atributos) onde cada linha representa uma observação e cada coluna representa um atributo específico.
-# oClass: É a matriz de classes correspondentes a cada observação em features.
-# f1index e f2index: São os índices dos atributos que você deseja plotar um contra o ou
+# oClass: É a matriz de classes correspondentes a cada observação features.
 
-# f1index representa o índice do atributo que será plotado no eixo x do gráfico.
-# f2index representa o índice do atributo que será plotado no eixo y do gráfico.
 
 def plotFeatures(features,oClass,f1index=0,f2index=1):
     nObs,nFea=features.shape
@@ -105,8 +102,8 @@ features=np.vstack((features_marta,features_bruno,features_dns))
 #um único array oClass que contém todas as classes correspondentes às observações do conjunto de dados combinado features.
 oClass=np.vstack((oClass_marta,oClass_bruno,oClass_dns))
 
-scaler = MaxAbsScaler().fit(features)
-features_scaled=scaler.transform(features)
+# scaler = MaxAbsScaler().fit(features)
+# features_scaled=scaler.transform(features)
 
 
 #print(oClass)
@@ -135,14 +132,14 @@ features_scaled=scaler.transform(features)
 #Para a primeira captura do script dumb de dns tunneling os valores de download sao muito mais elevados do que o comportamento normal -> exfiltração de dados 
 #script mais inteligente->mostra que o maximo de tráfego são valores mais baixos e estao na mesmo intervalo de valores do comportamento normal -> ataque mais súbtil
 
-# plt.figure(1)
-# plt.scatter(features_bruno[:, 0], features_bruno[:, 22], c='blue', label='Bruno')
-# plt.scatter(features_marta[:, 0], features_marta[:, 22], c='green', label='Marta')
-# plt.scatter(features_dns[:, 0], features_dns[:, 22], c='red', label='DNS Tunneling')
-# plt.title('Comparação entre maximo  nPktUp vs maximo  nPktDown')
-# plt.xlabel('maximo  nPktUp')  # Rótulo do eixo x
-# plt.ylabel('maximo  nPktDown')  # Rótulo do eixo y
-# plt.legend(loc='lower right', title='Classes')
+plt.figure(1)
+plt.scatter(features_bruno[:, 0], features_bruno[:, 22], c='blue', label='Bruno')
+plt.scatter(features_marta[:, 0], features_marta[:, 22], c='green', label='Marta')
+plt.scatter(features_dns[:, 0], features_dns[:, 22], c='red', label='DNS Tunneling')
+plt.title('Comparação entre maximo  nPktUp vs maximo  nPktDown')
+plt.xlabel('maximo  nPktUp')  # Rótulo do eixo x
+plt.ylabel('maximo  nPktDown')  # Rótulo do eixo y
+plt.legend(loc='lower right', title='Classes')
 
 
 #----------------------------------------------------------------------------------------------------------------
@@ -151,14 +148,14 @@ features_scaled=scaler.transform(features)
 #uploads anormal relativamente ao bom comportamento
 #dns_tunneling_smart -> média de pacotes do dns_tunneling é muito inferior ao outro script -> mais subtil
 #mesmo assim desvio padrao do ataque é maior que o comportamento normal
-# plt.figure(2)
-# plt.scatter(features_bruno[:, 1], features_bruno[:, 3], c='blue', label='Bruno')
-# plt.scatter(features_marta[:, 1], features_marta[:, 3], c='green', label='Marta')
-# plt.scatter(features_dns[:, 1], features_dns[:, 3], c='red', label='DNS Tunneling')
-# plt.title('Comparação entre média nPktUp e desvio padrão nPktUp')
-# plt.xlabel('média nPktUP')  # Rótulo do eixo x
-# plt.ylabel('desvio padrão nPktUp')  # Rótulo do eixo y
-# plt.legend(loc='lower right', title='Classes')
+plt.figure(2)
+plt.scatter(features_bruno[:, 1], features_bruno[:, 3], c='blue', label='Bruno')
+plt.scatter(features_marta[:, 1], features_marta[:, 3], c='green', label='Marta')
+plt.scatter(features_dns[:, 1], features_dns[:, 3], c='red', label='DNS Tunneling')
+plt.title('Comparação entre média nPktUp e desvio padrão nPktUp')
+plt.xlabel('média nPktUP')  # Rótulo do eixo x
+plt.ylabel('desvio padrão nPktUp')  # Rótulo do eixo y
+plt.legend(loc='lower right', title='Classes')
 
 #------------------------------------------------------
 
@@ -172,14 +169,14 @@ features_scaled=scaler.transform(features)
 
 #script_maior -> mais silencios relativamente ao script burro. Ainda assim o desvio padrao pequeno o que indica ainda assim comportamento anormal. O desvio do gaussian delay foi 
 #  talvez demasiado pequeno entre transferencia de chunks -> mesmo com gaussian delay nao é facil imitar comportamento humano
-# plt.figure(3)
-# plt.scatter(features_bruno[:, 5], features_bruno[:, 6], c='blue', label='Bruno')
-# plt.scatter(features_marta[:, 5], features_marta[:, 6], c='green', label='Marta')
-# plt.scatter(features_dns[:, 5], features_dns[:, 6], c='red', label='DNS Tunneling')
-# plt.title('Comparação entre média de silêncio nPktUp e desvio padrão silêncio nPktUp')
-# plt.xlabel('média silêncio nPktUp')  # Rótulo do eixo x
-# plt.ylabel('desvio padrão silêncio nPktUp')  # Rótulo do eixo y
-# plt.legend(loc='lower right', title='Classes')
+plt.figure(3)
+plt.scatter(features_bruno[:, 5], features_bruno[:, 6], c='blue', label='Bruno')
+plt.scatter(features_marta[:, 5], features_marta[:, 6], c='green', label='Marta')
+plt.scatter(features_dns[:, 5], features_dns[:, 6], c='red', label='DNS Tunneling')
+plt.title('Comparação entre média de silêncio nPktUp e desvio padrão silêncio nPktUp')
+plt.xlabel('média silêncio nPktUp')  # Rótulo do eixo x
+plt.ylabel('desvio padrão silêncio nPktUp')  # Rótulo do eixo y
+plt.legend(loc='lower right', title='Classes')
 
 
 #------------------------------------------------------
@@ -199,14 +196,14 @@ features_scaled=scaler.transform(features)
 
 #script smart-> apesar de melhorias(valores de percentis mais baixos ) mesmo assim o script revela uma diferença significativa entre percentis e desvio padrão o que indica 
 #uma quantidade de trafego consideravel a ser transmitdo relativamente ao comportamento normal -> exfiltração de dados
-# plt.figure(4)
-# plt.scatter(features_bruno[:, 14], features_bruno[:, 21], c='blue', label='Bruno')
-# plt.scatter(features_marta[:, 14], features_marta[:, 21], c='green', label='Marta')
-# plt.scatter(features_dns[:, 14], features_dns[:, 21], c='red', label='DNS Tunneling')
-# plt.title('Comparação entre desvio BytesUp e percentis 98 BytesUp')
-# plt.xlabel('desvio BytesUp ')  # Rótulo do eixo x
-# plt.ylabel('percentis 98 BytesUp')  # Rótulo do eixo y
-# plt.legend(loc='lower right', title='Classes')
+plt.figure(4)
+plt.scatter(features_bruno[:, 14], features_bruno[:, 21], c='blue', label='Bruno')
+plt.scatter(features_marta[:, 14], features_marta[:, 21], c='green', label='Marta')
+plt.scatter(features_dns[:, 14], features_dns[:, 21], c='red', label='DNS Tunneling')
+plt.title('Comparação entre desvio BytesUp e percentis 98 BytesUp')
+plt.xlabel('desvio BytesUp ')  # Rótulo do eixo x
+plt.ylabel('percentis 98 BytesUp')  # Rótulo do eixo y
+plt.legend(loc='lower right', title='Classes')
 
 
 #divisão do conjunto de dados em dados de treino e de teste.
@@ -501,7 +498,7 @@ df.to_excel('resultados_OneClassSVM.xlsx', index=False)
 
 
 
-############################ -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
+##################################################################################### -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
 
 n_components_list = [1, 5, 10, 15, 16, 17, 18, 19, 20, 21]
 
@@ -624,16 +621,16 @@ for n_components in n_components_list:
         'F1 Score': f1_score_poly
     })
 
-# Criando um DataFrame a partir dos resultados
+# DataFrame a partir dos resultados
 df = pd.DataFrame(results)
 
-# Salvando o DataFrame em um arquivo Excel
+#DataFrame num  arquivo Excel
 df.to_excel('resultados_OneClassseSvm_pca.xlsx', index=False)
 
 
 
-################################################################### -- 10 Classification based on Support Vector Machines without PCA -- #####################################################################################
-# print('\n-- Classification based on Support Vector Machines --')
+################################################################## -- 10 Classification based on Support Vector Machines without PCA -- #####################################################################################
+print('\n-- Classification based on Support Vector Machines --')
 
 i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
 i3Ctest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
@@ -677,7 +674,7 @@ for i in range(nObsTest):
     if Classes[L2[i]] == Classes[o3testClass[i][0]]:
         if Classes[L2[i]] == 'DNS': 
             tn_svm_rbf += 1
-        else:  # Negative class
+        else:  
             tp_svm_rbf += 1
     else:
         if Classes[L2[i]] == 'DNS':
@@ -689,7 +686,7 @@ for i in range(nObsTest):
     if Classes[L3[i]] == Classes[o3testClass[i][0]]:
         if Classes[L3[i]] == 'DNS':  
             tn_svm_poly += 1
-        else:  # Negative class
+        else:  
             tp_svm_poly += 1
     else:
         if Classes[L3[i]] == 'DNS':
@@ -716,7 +713,6 @@ f1_score_svm_rbf = (2 * (precision_svm_rbf * recall_svm_rbf) / (precision_svm_rb
 recall_svm_poly = (tp_svm_poly / (tp_svm_poly + fn_svm_poly)) * 100 if (tp_svm_poly + fn_svm_poly) > 0 else 0
 f1_score_svm_poly = (2 * (precision_svm_poly * recall_svm_poly) / (precision_svm_poly + recall_svm_poly)) / 100 if (precision_svm_poly + recall_svm_poly) != 0 else 0
 
-# Criar um DataFrame com os resultados
 results = {
     'Kernel': ['Linear', 'RBF', 'Poly'],
     'TP': [tp_svm_linear, tp_svm_rbf, tp_svm_poly],
@@ -731,20 +727,20 @@ results = {
 
 df_svm = pd.DataFrame(results)
 
-# Salvar os resultados em um arquivo Excel
+
 df_svm.to_excel('resultados_SVM.xlsx', index=False)
 
-########################################### -- 10.2 Classification based on Support Vector Machines with PCA -- #####################################################################################
-# print('\n-- Classification based on Support Vector Machines --')
+######################################### -- 10.2 Classification based on Support Vector Machines with PCA -- #####################################################################################
+#print('\n-- Classification based on Support Vector Machines --')
 
 i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
 i3Ctest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
 
-# Define a range of components to test
+#Define a range of components to test
 components_to_test = [5, 10, 15, 20]  
 results=[]
 for n_components in components_to_test:
-    # Initialize PCA and fit-transform the data
+    #Initialize PCA and fit-transform the data
     pca = PCA(n_components=n_components)
     i3train_pca = pca.fit_transform(i3train)
     i3Ctest_pca = pca.transform(i3Ctest)
@@ -757,18 +753,18 @@ for n_components in components_to_test:
     L3=poly_svc.predict(i3Ctest)
     print('\n')
 
-    # Linear SVM
+    #Linear SVM
     tp_svm_linear, fn_svm_linear, tn_svm_linear, fp_svm_linear = 0, 0, 0, 0
-    # RBF SVM
+    #RBF SVM
     tp_svm_rbf, fn_svm_rbf, tn_svm_rbf, fp_svm_rbf = 0, 0, 0, 0
-    # Poly SVM
+    #Poly SVM
     tp_svm_poly, fn_svm_poly, tn_svm_poly, fp_svm_poly = 0, 0, 0, 0
 
     nObsTest,nFea=i3Ctest.shape
 
     for i in range(nObsTest):
-        #print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],Classes[L1[i]],Classes[L2[i]],Classes[L3[i]]))
-        # Linear SVM
+        print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],Classes[L1[i]],Classes[L2[i]],Classes[L3[i]]))
+        #Linear SVM
         if Classes[L1[i]] == Classes[o3testClass[i][0]]:
             if Classes[L1[i]] == 'DNS':  
                 tn_svm_linear += 1
@@ -780,7 +776,7 @@ for n_components in components_to_test:
             else:
                 fp_svm_linear += 1
 
-        # RBF SVM 
+        #RBF SVM 
         if Classes[L2[i]] == Classes[o3testClass[i][0]]:
             if Classes[L2[i]] == 'DNS':  
                 tn_svm_rbf += 1
@@ -792,7 +788,7 @@ for n_components in components_to_test:
             else:
                 fp_svm_rbf += 1
 
-        # Poly SVM 
+        #Poly SVM 
         if Classes[L3[i]] == Classes[o3testClass[i][0]]:
             if Classes[L3[i]] == 'DNS':  
                 tn_svm_poly += 1
@@ -805,33 +801,33 @@ for n_components in components_to_test:
                 fp_svm_poly += 1
 
 
-    # Calculate Accuracy for Linear SVM
+    #Calculate Accuracy for Linear SVM
     accuracy_svm_linear = ((tp_svm_linear + tn_svm_linear) / (tp_svm_linear + tn_svm_linear + fp_svm_linear + fn_svm_linear)) * 100
 
-    # Calculate Accuracy for RBF SVM
+    #Calculate Accuracy for RBF SVM
     accuracy_svm_rbf = ((tp_svm_rbf + tn_svm_rbf) / (tp_svm_rbf + tn_svm_rbf + fp_svm_rbf + fn_svm_rbf)) * 100
 
-    # Calculate Accuracy for Poly SVM
+    #Calculate Accuracy for Poly SVM
     accuracy_svm_poly = ((tp_svm_poly + tn_svm_poly) / (tp_svm_poly + tn_svm_poly + fp_svm_poly + fn_svm_poly)) * 100
 
-    precision_svm_linear = (tp_svm_linear / (tp_svm_linear + fp_svm_linear)) if (tp_svm_linear + fp_svm_linear) != 0 else 0
-    recall_svm_linear = (tp_svm_linear / (tp_svm_linear + fn_svm_linear)) if (tp_svm_linear + fn_svm_linear) != 0 else 0
-    f1_score_svm_linear = 2 * (precision_svm_linear * recall_svm_linear) / (precision_svm_linear + recall_svm_linear) if (precision_svm_linear + recall_svm_linear) != 0 else 0
+    precision_svm_linear = (tp_svm_linear / (tp_svm_linear + fp_svm_linear))*100 if (tp_svm_linear + fp_svm_linear) != 0 else 0
+    recall_svm_linear = (tp_svm_linear / (tp_svm_linear + fn_svm_linear))*100 if (tp_svm_linear + fn_svm_linear) != 0 else 0
+    f1_score_svm_linear = (2 * (precision_svm_linear * recall_svm_linear) / (precision_svm_linear + recall_svm_linear))/100 if (precision_svm_linear + recall_svm_linear) != 0 else 0
 
-    # Calculate F1 score for RBF SVM
-    precision_svm_rbf = (tp_svm_rbf / (tp_svm_rbf + fp_svm_rbf)) if (tp_svm_rbf + fp_svm_rbf) != 0 else 0
-    recall_svm_rbf = (tp_svm_rbf / (tp_svm_rbf + fn_svm_rbf)) if (tp_svm_rbf + fn_svm_rbf) != 0 else 0
-    f1_score_svm_rbf = 2 * (precision_svm_rbf * recall_svm_rbf) / (precision_svm_rbf + recall_svm_rbf) if (precision_svm_rbf + recall_svm_rbf) != 0 else 0
+    #Calculate F1 score for RBF SVM
+    precision_svm_rbf = (tp_svm_rbf / (tp_svm_rbf + fp_svm_rbf))*100 if (tp_svm_rbf + fp_svm_rbf) != 0 else 0
+    recall_svm_rbf = (tp_svm_rbf / (tp_svm_rbf + fn_svm_rbf)*100) if (tp_svm_rbf + fn_svm_rbf) != 0 else 0
+    f1_score_svm_rbf = (2 * (precision_svm_rbf * recall_svm_rbf) / (precision_svm_rbf + recall_svm_rbf))/100 if (precision_svm_rbf + recall_svm_rbf) != 0 else 0
 
-    # Calculate F1 score for Poly SVM
-    precision_svm_poly = (tp_svm_poly / (tp_svm_poly + fp_svm_poly)) if (tp_svm_poly + fp_svm_poly) != 0 else 0
-    recall_svm_poly = (tp_svm_poly / (tp_svm_poly + fn_svm_poly)) if (tp_svm_poly + fn_svm_poly) != 0 else 0
-    f1_score_svm_poly = 2 * (precision_svm_poly * recall_svm_poly) / (precision_svm_poly + recall_svm_poly) if (precision_svm_poly + recall_svm_poly) != 0 else 0
+    #Calculate F1 score for Poly SVM
+    precision_svm_poly = (tp_svm_poly / (tp_svm_poly + fp_svm_poly))*100 if (tp_svm_poly + fp_svm_poly) != 0 else 0
+    recall_svm_poly = (tp_svm_poly / (tp_svm_poly + fn_svm_poly))*100 if (tp_svm_poly + fn_svm_poly) != 0 else 0
+    f1_score_svm_poly = (2 * (precision_svm_poly * recall_svm_poly) / (precision_svm_poly + recall_svm_poly))/100 if (precision_svm_poly + recall_svm_poly) != 0 else 0
 
 
     results.append({
         'Components': n_components,
-        'Method': 'Linear',
+        'Kernel': 'Linear',
         'TP': tp_svm_linear,
         'FP': fp_svm_linear,
         'TN': tn_svm_linear,
@@ -844,7 +840,7 @@ for n_components in components_to_test:
     
     results.append({
         'Components': n_components,
-        'Method': 'RBF',
+        'Kernel': 'RBF',
         'TP': tp_svm_rbf,
         'FP': fp_svm_rbf,
         'TN': tn_svm_rbf,
@@ -857,7 +853,7 @@ for n_components in components_to_test:
 
     results.append({
         'Components': n_components,
-        'Method': 'Poly',
+        'Kernel': 'Poly',
         'TP': tp_svm_poly,
         'FP': fp_svm_poly,
         'TN': tn_svm_poly,
@@ -868,31 +864,13 @@ for n_components in components_to_test:
         'F1 Score': f1_score_svm_poly
     })
 
-    # results.append({
-    #     'Kernel': ['Linear', 'RBF', 'Poly'],
-    #     'Components': n_components,
-    #     'TP': [tp_svm_linear, tp_svm_rbf, tp_svm_poly],
-    #     'FP': [fp_svm_linear, fp_svm_rbf, fp_svm_poly],
-    #     'TN': [tn_svm_linear, tn_svm_rbf, tn_svm_poly],
-    #     'FN': [fn_svm_linear, fn_svm_rbf, fn_svm_poly],
-    #     'Accuracy': [accuracy_svm_linear, accuracy_svm_rbf, accuracy_svm_poly],
-    #     'Precision': [precision_svm_linear, precision_svm_rbf, precision_svm_poly],
-    #     'Recall': [recall_svm_linear, recall_svm_rbf, recall_svm_poly],
-    #     'F1 Score': [f1_score_svm_linear, f1_score_svm_rbf, f1_score_svm_poly],
-    #     'TP': [tp_svm_linear, tp_svm_rbf, tp_svm_poly],
-    #     'FP': [fp_svm_linear, fp_svm_rbf, fp_svm_poly],
-    #     'TN': [tn_svm_linear, tn_svm_rbf, tn_svm_poly],
-    #     'FN': [fn_svm_linear, fn_svm_rbf, fn_svm_poly],
-    # })
-
 df_svm = pd.DataFrame(results)
 
-# Salvar os resultados em um arquivo Excel
 df_svm.to_excel('resultados_SVM_PCA.xlsx', index=False)
 
 
 
-#################################### -- 12 Classification based on Neural Networks without pca -- #########################################################################################################
+################################### -- 12 Classification based on Neural Networks without pca -- #########################################################################################################
 from sklearn.neural_network import MLPClassifier
 #print('\n-- Classification based on Neural Networks --')
 i3train=np.vstack((trainFeatures_bruno,trainFeatures_marta,trainFeatures_dns))
@@ -909,7 +887,7 @@ clf = MLPClassifier(solver='lbfgs',alpha=alpha,hidden_layer_sizes=(20,),max_iter
 clf.fit(i3trainN, o3trainClass)
 LT=clf.predict(i3CtestN)
 
-# Neural Network
+#Neural Network
 tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
 acc_nn = []  
 pre_nn = []  
@@ -917,7 +895,7 @@ results=[]
 nObsTest,nFea=i3CtestN.shape
 
 for i in range(nObsTest):
-    #print('Obs: {:2} ({:<8}): Classification->{}'.format(i,Classes[o3testClass[i][0]],Classes[LT[i]]))
+    print('Obs: {:2} ({:<8}): Classification->{}'.format(i,Classes[o3testClass[i][0]],Classes[LT[i]]))
     if LT[i] == o3testClass[i][0]:
         if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
             tn_nn += 1
@@ -943,12 +921,10 @@ results.append({
 })
 
 df_svm = pd.DataFrame(results)
-
-# Salvar os resultados em um arquivo Excel
 df_svm.to_excel('resultados_redes_neurais.xlsx', index=False)
 
 
-#################################### -- 12 Classification based on Neural Networks with pca -- #########################################################################################################
+################################### -- 12 Classification based on Neural Networks with pca -- #########################################################################################################
 
 components_to_test = [1,5, 10, 15, 20]
 
@@ -999,12 +975,10 @@ for n_components in components_to_test:
         'F1 Score Neural Network': f1_score_nn
     })
 
-# Criar um DataFrame com os resultados
 df_nn = pd.DataFrame(results)
 
-# Salvar os resultados em um arquivo Excel
 df_nn.to_excel('resultados_redes_neurais_pca.xlsx', index=False)
 
 
-# # Wait for user input before exiting
+# # # Wait for user input before exiting
 waitforEnter(fstop=True)
