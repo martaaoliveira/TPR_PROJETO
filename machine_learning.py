@@ -419,7 +419,7 @@ AnomResults={-1:"Anomaly",1:"OK"}
 # 
 tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
 tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
+tp_svm_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
 
 
 nObsTest,nFea=i3Atest.shape
@@ -458,7 +458,7 @@ for i in range(nObsTest):
             tn_poly += 1
     else:
         if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :
-            tp_poly += 1
+            tp_svm_poly += 1
         else:
             fp_poly += 1
 
@@ -469,12 +469,12 @@ precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp
 accuracy_rbf = ((tp_rbf + tn_rbf) / nObsTest) * 100
 precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
 
-accuracy_poly = ((tp_poly + tn_poly) / nObsTest) * 100
-precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
+accuracy_poly = ((tp_svm_poly + tn_poly) / nObsTest) * 100
+precision_poly = (tp_svm_poly / (tp_svm_poly + fp_poly)) * 100 if tp_svm_poly + fp_poly > 0 else 0
 
 recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
 recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
-recall_poly = (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0
+recall_poly = (tp_svm_poly / (tp_svm_poly + fn_poly)) * 100 if tp_svm_poly + fn_poly > 0 else 0
 
 f1_score_linear = (2 * (precision_linear * recall_linear) / (precision_linear + recall_linear)) / 100 if (precision_linear + recall_linear) != 0 else 0
 f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf)) / 100 if (precision_rbf + recall_rbf) != 0 else 0
@@ -483,7 +483,7 @@ f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_p
 
 results = {
     'Method': ['Linear', 'RBF', 'Poly'],
-    'TP': [tp_linear, tp_rbf, tp_poly],
+    'TP': [tp_linear, tp_rbf, tp_svm_poly],
     'FP': [fp_linear, fp_rbf, fp_poly],
     'TN': [tn_linear, tn_rbf, tn_poly],
     'FN': [fn_linear, fn_rbf, fn_poly],
@@ -526,7 +526,7 @@ for n_components in n_components_list:
     # Calculando as métricas para Linear
     tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
     tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-    tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
+    tp_svm_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
     
     AnomResults={-1:"Anomaly",1:"OK"}
 
@@ -564,7 +564,7 @@ for n_components in n_components_list:
                 tn_poly += 1
         else:
             if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :
-                tp_poly += 1
+                tp_svm_poly += 1
             else:
                 fp_poly += 1
     
@@ -574,18 +574,17 @@ for n_components in n_components_list:
     accuracy_rbf = ((tp_rbf + tn_rbf) / nObsTest) * 100
     precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
 
-    accuracy_poly = ((tp_poly + tn_poly) / nObsTest) * 100
-    precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
+    accuracy_poly = ((tp_svm_poly + tn_poly) / nObsTest) * 100
+    precision_poly = (tp_svm_poly / (tp_svm_poly + fp_poly)) * 100 if tp_svm_poly + fp_poly > 0 else 0
 
     recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
     recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
-    recall_poly = (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0
+    recall_poly = (tp_svm_poly / (tp_svm_poly + fn_poly)) * 100 if tp_svm_poly + fn_poly > 0 else 0
 
     f1_score_linear = (2 * (precision_linear * recall_linear) / (precision_linear + recall_linear)) / 100 if (precision_linear + recall_linear) != 0 else 0
     f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf)) / 100 if (precision_rbf + recall_rbf) != 0 else 0
     f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_poly)) / 100 if (precision_poly + recall_poly) != 0 else 0
     
-    # Salvando os resultados em uma lista
     results.append({
         'Components': n_components,
         'Method': 'Linear',
@@ -595,8 +594,8 @@ for n_components in n_components_list:
         'FN': fn_linear,
         'Accuracy': accuracy_linear,
         'Precision': precision_linear,
-        'Recall': (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0,
-        'F1 Score': (2 * (precision_linear * (tp_linear / (tp_linear + fn_linear))) / (precision_linear + (tp_linear / (tp_linear + fn_linear)))) / 100 if precision_linear + (tp_linear / (tp_linear + fn_linear)) != 0 else 0
+        'Recall': recall_linear,
+        'F1 Score': f1_score_linear
     })
     
     results.append({
@@ -608,21 +607,21 @@ for n_components in n_components_list:
         'FN': fn_rbf,
         'Accuracy': accuracy_rbf,
         'Precision': precision_rbf,
-        'Recall': (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0,
-        'F1 Score': (2 * (precision_rbf * (tp_rbf / (tp_rbf + fn_rbf))) / (precision_rbf + (tp_rbf / (tp_rbf + fn_rbf)))) / 100 if precision_rbf + (tp_rbf / (tp_rbf + fn_rbf)) != 0 else 0
+        'Recall': recall_rbf,
+        'F1 Score': f1_score_rbf
     })
 
     results.append({
         'Components': n_components,
         'Method': 'Poly',
-        'TP': tp_poly,
+        'TP': tp_svm_poly,
         'FP': fp_poly,
         'TN': tn_poly,
         'FN': fn_poly,
         'Accuracy': accuracy_poly,
         'Precision': precision_poly,
-        'Recall': (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0,
-        'F1 Score': (2 * (precision_poly * (tp_poly / (tp_poly + fn_poly))) / (precision_poly + (tp_poly / (tp_poly + fn_poly)))) / 100 if precision_poly + (tp_poly / (tp_poly + fn_poly)) != 0 else 0
+        'Recall': f1_score_poly,
+        'F1 Score': f1_score_poly
     })
 
 # Criando um DataFrame a partir dos resultados
@@ -832,19 +831,59 @@ for n_components in components_to_test:
 
     results.append({
         'Components': n_components,
-        'Accuracy Linear SVM': accuracy_svm_linear,
-        'Precision Linear SVM': precision_svm_linear,
-        'Recall Linear SVM': recall_svm_linear,
-        'F1 Score Linear SVM': f1_score_svm_linear,
-        'Accuracy RBF SVM': accuracy_svm_rbf,
-        'Precision RBF SVM': precision_svm_rbf,
-        'Recall RBF SVM': recall_svm_rbf,
-        'F1 Score RBF SVM': f1_score_svm_rbf,
-        'Accuracy Poly SVM': accuracy_svm_poly,
-        'Precision Poly SVM': precision_svm_poly,
-        'Recall Poly SVM': recall_svm_poly,
-        'F1 Score Poly SVM': f1_score_svm_poly
+        'Method': 'Linear',
+        'TP': tp_svm_linear,
+        'FP': fp_svm_linear,
+        'TN': tn_svm_linear,
+        'FN': fn_svm_linear,
+        'Accuracy': accuracy_svm_linear,
+        'Precision': precision_svm_linear,
+        'Recall': recall_svm_linear,
+        'F1 Score': f1_score_svm_linear
     })
+    
+    results.append({
+        'Components': n_components,
+        'Method': 'RBF',
+        'TP': tp_svm_rbf,
+        'FP': fp_svm_rbf,
+        'TN': tn_svm_rbf,
+        'FN': fn_svm_rbf,
+        'Accuracy': accuracy_svm_rbf,
+        'Precision': precision_svm_rbf,
+        'Recall': recall_svm_rbf,
+        'F1 Score': f1_score_svm_rbf
+    })
+
+    results.append({
+        'Components': n_components,
+        'Method': 'Poly',
+        'TP': tp_svm_poly,
+        'FP': fp_svm_poly,
+        'TN': tn_svm_poly,
+        'FN': fn_svm_poly,
+        'Accuracy': accuracy_svm_poly,
+        'Precision': precision_svm_poly,
+        'Recall': recall_svm_poly,
+        'F1 Score': f1_score_svm_poly
+    })
+
+    # results.append({
+    #     'Kernel': ['Linear', 'RBF', 'Poly'],
+    #     'Components': n_components,
+    #     'TP': [tp_svm_linear, tp_svm_rbf, tp_svm_poly],
+    #     'FP': [fp_svm_linear, fp_svm_rbf, fp_svm_poly],
+    #     'TN': [tn_svm_linear, tn_svm_rbf, tn_svm_poly],
+    #     'FN': [fn_svm_linear, fn_svm_rbf, fn_svm_poly],
+    #     'Accuracy': [accuracy_svm_linear, accuracy_svm_rbf, accuracy_svm_poly],
+    #     'Precision': [precision_svm_linear, precision_svm_rbf, precision_svm_poly],
+    #     'Recall': [recall_svm_linear, recall_svm_rbf, recall_svm_poly],
+    #     'F1 Score': [f1_score_svm_linear, f1_score_svm_rbf, f1_score_svm_poly],
+    #     'TP': [tp_svm_linear, tp_svm_rbf, tp_svm_poly],
+    #     'FP': [fp_svm_linear, fp_svm_rbf, fp_svm_poly],
+    #     'TN': [tn_svm_linear, tn_svm_rbf, tn_svm_poly],
+    #     'FN': [fn_svm_linear, fn_svm_rbf, fn_svm_poly],
+    # })
 
 df_svm = pd.DataFrame(results)
 
