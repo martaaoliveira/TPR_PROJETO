@@ -304,10 +304,7 @@ for AnomalyThreshold in threshold_values:
         'F1 Score': f1_score_centroids
     })
 
-# Crie um DataFrame a partir da lista de resultados
 df = pd.DataFrame(results)
-
-# Salve o DataFrame em um arquivo Excel
 df.to_excel('resultados_centroid.xlsx', index=False)
                                                                        
 
@@ -342,7 +339,6 @@ for n_components in components_to_test:
     # Define a range of threshold values to test
     threshold_values = [0.1,0.2,0.3,0.4,0.5,1.0,1.2, 1.1, 1.5, 2.0,3,5,6,10]  # Add more threshold values as needed
 
-    # Initialize lists to store evaluation metrics for each threshold
     threshold_metrics = []
 
     for AnomalyThreshold in threshold_values:
@@ -390,10 +386,7 @@ for n_components in components_to_test:
         })
 
 
-# Crie um DataFrame a partir da lista de resultados
 df = pd.DataFrame(results)
-
-# Salve o DataFrame em um arquivo Excel
 df.to_excel('resultados_centroid_pca.xlsx', index=False)
 
 # ########################################## -- 8 -- Anomaly Detection based on One Class Support Vector Machines WITHOUT PCA ###############################
@@ -520,7 +513,6 @@ for n_components in n_components_list:
     L2 = rbf_ocsvm.predict(i3Atest_pca)
     L3 = poly_ocsvm.predict(i3Atest_pca)
     
-    # Calculando as métricas para Linear
     tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
     tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
     tp_svm_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
