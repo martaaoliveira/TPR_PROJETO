@@ -249,13 +249,13 @@ import seaborn as sns
 i2train=np.vstack((trainFeatures_bruno))
 #scaler = MaxAbsScaler().fit(i2train)
 #i2train=scaler.transform(i2train)
-results = []
 
+results = []
 actual_labels = []
 predicted_labels = []
-
-
 centroids={}
+best_f1_index = 0  # Initializing the index of the best F1 score
+
 for c in range(1):  # Only the first  class(client class)
     pClass=(o2trainClass==c).flatten()
     centroids.update({c:np.mean(i2train[pClass,:],axis=0)})
@@ -274,6 +274,9 @@ threshold_values = [0.1,0.2,0.3,0.4,0.5,1.0,1.2, 1.1, 1.5, 2.0,3,5,6,10]
 # Initialize lists to store evaluation metrics for each threshold
 threshold_metrics = []
 
+
+best_confusion_matrix = None  # Initializing outside the conditional block
+
 for AnomalyThreshold in threshold_values:
     # Initialize variables for TP, FP, TN, FN for the current threshold
     tp_centroids = 0
@@ -286,7 +289,6 @@ for AnomalyThreshold in threshold_values:
     # Perform anomaly detection based on the current threshold
     for i in range(nObsTest):
         actual_labels.append(o3testClass[i][0])
-        # print(o3testClass[i][0])
         x = i3Atest[i]
         dists = [distance(x, centroids[0])]
         if min(dists) > AnomalyThreshold:
@@ -298,21 +300,13 @@ for AnomalyThreshold in threshold_values:
                 fp_centroids += 1  # False Positive
         else:
             result = "OK"
-            predicted_labels.append(0.0)  # Predicted as normal
+            predicted_labels.append(0.0) 
             if o3testClass[i][0] == 2.0:  # DNS class
                 fn_centroids += 1  # False Negative
             else:
                 tn_centroids += 1  # True Negative
 
-    conf_matrix = confusion_matrix(actual_labels, predicted_labels)
-    # Plotting the confusion matrix as a heatmap
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(conf_matrix, annot=True, cmap='Blues', fmt='d', 
-                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(f'Confusion Matrix (Threshold: {AnomalyThreshold})')
-    plt.show()
+
     # Calculate evaluation metrics for the current threshold
     accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
     precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
@@ -329,93 +323,136 @@ for AnomalyThreshold in threshold_values:
         'Accuracy': accuracy_centroids,
         'Precision': precision_centroids,
         'Recall': recall_centroids,
-        'F1 Score': f1_score_centroids
+        'F1 Score': f1_score_centroids,
+        'ConfusionMatrix': confusion_matrix(actual_labels, predicted_labels)
     })
 
+
 df = pd.DataFrame(results)
+
 df.to_excel('resultados_centroid.xlsx', index=False)
-                                                                       
+
+# Find the index of the row with the best F1 score
+best_f1_index = df['F1 Score'].idxmax()
+
+# Get the threshold with the best F1 score
+best_threshold = df.loc[best_f1_index, 'AnomalyThreshold']
+
+best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
+
+# Plot the best confusion matrix if it exists
+plt.figure(figsize=(8, 6))
+sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
+                xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title(f'Best Confusion Matrix (Threshold: {best_threshold})')
+plt.show()
 
 
-######################################## -- 7.2 -- Centroids Distances Com PCA ######################### ##
+####################################### -- 7.2 -- Centroids Distances Com PCA ######################### ##
 
-# print('\n-- Anomaly Detection based on Centroids Distances with PCA --')
-# components_to_test = [10, 15, 20, 25, 30]  
-# results = []
+##print('\n-- Anomaly Detection based on Centroids Distances with PCA --')
+components_to_test = [10, 15, 20, 25]  
+results = []
+best_confusion_matrix = None  # Initializing outside the conditional block
 
-# for n_components in components_to_test:
-#     i2train = np.vstack((trainFeatures_bruno, trainFeatures_marta))
-#     #scaler = MaxAbsScaler().fit(i2train)
-#     #i2train = scaler.transform(i2train)
+for n_components in components_to_test:
+    i2train = np.vstack((trainFeatures_bruno))
 
-#     # Initialize PCA and fit-transform the data
-#     pca = PCA(n_components=n_components)
-#     i2train_pca = pca.fit_transform(i2train)
+    actual_labels = []
+    predicted_labels = []
 
-#     centroids = {}
-#     for c in range(2):  # Only the first two classes (client classes)
-#         pClass = (o2trainClass == c).flatten()
-#         centroids.update({c: np.mean(i2train_pca[pClass, :], axis=0)})
+    # Initialize PCA and fit-transform the data
+    pca = PCA(n_components=n_components)
+    i2train_pca = pca.fit_transform(i2train)
 
-#     i3Atest = np.vstack((testFeatures_bruno, testFeatures_marta, testFeatures_dns))
-#     #i3Atest = scaler.transform(i3Atest)
-#     i3Atest_pca = pca.transform(i3Atest)
+    centroids = {}
+    for c in range(1):  
+        pClass = (o2trainClass == c).flatten()
+        centroids.update({c: np.mean(i2train_pca[pClass, :], axis=0)})
 
-#     print(f'\n-- Anomaly Detection based on Centroids Distances (Components: {n_components}) --')
-#     nObsTest, nFea = i3Atest_pca.shape
+    i3Atest = np.vstack((testFeatures_bruno, testFeatures_dns))
+    i3Atest_pca = pca.transform(i3Atest)
 
-#     # Define a range of threshold values to test
-#     threshold_values = [0.1,0.2,0.3,0.4,0.5,1.0,1.2, 1.1, 1.5, 2.0,3,5,6,10]  # Add more threshold values as needed
+    print(f'\n-- Anomaly Detection based on Centroids Distances (Components: {n_components}) --')
+    nObsTest, nFea = i3Atest_pca.shape
 
-#     threshold_metrics = []
+    # Define a range of threshold values to test
+    threshold_values = [0.1,0.2,0.3,0.4,0.5,1.0,1.2, 1.1, 1.5, 2.0,3,5,6,10]  # Add more threshold values as needed
 
-#     for AnomalyThreshold in threshold_values:
-#         # Initialize variables for TP, FP, TN, FN for the current threshold
-#         tp_centroids = 0
-#         fp_centroids = 0
-#         tn_centroids = 0
-#         fn_centroids = 0
+    threshold_metrics = []
 
-#         # Perform anomaly detection based on the current threshold
-#         for i in range(nObsTest):
-#             x = i3Atest_pca[i]
-#             dists = [distance(x, centroids[0]), distance(x, centroids[1])]
-#             if min(dists) > AnomalyThreshold:
-#                 result = "Anomaly"
-#                 if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
-#                     fn_centroids += 1  # False Negative
-#                 else:
-#                     tn_centroids += 1  # True Negative
-#             else:
-#                 result = "OK"
-#                 if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
-#                     tp_centroids += 1  # True Positive
-#                 else:
-#                     fp_centroids += 1  # False Positive
+    for AnomalyThreshold in threshold_values:
+        # Initialize variables for TP, FP, TN, FN for the current threshold
+        tp_centroids = 0
+        fp_centroids = 0
+        tn_centroids = 0
+        fn_centroids = 0
+        actual_labels = []
+        predicted_labels = []
 
-#         # Calculate evaluation metrics for the current threshold
-#         accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
-#         precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
-#         recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (tp_centroids + fn_centroids) != 0 else 0
-#         f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (precision_centroids + recall_centroids)) / 100 if (precision_centroids + recall_centroids) != 0 else 0
+        # Perform anomaly detection based on the current threshold
+        for i in range(nObsTest):
+            actual_labels.append(o3testClass[i][0])
+            x = i3Atest_pca[i]
+            dists = [distance(x, centroids[0])]
+            if min(dists) > AnomalyThreshold:
+                result = "Anomaly"
+                predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
+                if o3testClass[i][0] == 2.0:  # DNS class
+                    tp_centroids += 1  # True Positive
+                else:
+                    fp_centroids += 1  # False Positive
 
-#         # Store metrics for the current threshold in the list
-#         results.append({
-#             'AnomalyThreshold': AnomalyThreshold,
-#             'Número de Componentes': n_components,  # Adicionando o número de componente
-#             'TP': tp_centroids,
-#             'FP': fp_centroids,
-#             'TN': tn_centroids,
-#             'FN': fn_centroids,
-#             'Accuracy': accuracy_centroids,
-#             'Precision': precision_centroids,
-#             'Recall': recall_centroids,
-#             'F1 Score': f1_score_centroids
-#         })
+            else:
+                result = "OK"
+                predicted_labels.append(0.0) 
+                if o3testClass[i][0] == 2.0:  # DNS class
+                    fn_centroids += 1  # False Negative
+                else:
+                    tn_centroids += 1  # True Negative
+
+        # Calculate evaluation metrics for the current threshold
+        accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
+        precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
+        recall_centroids = (tp_centroids / (tp_centroids + fn_centroids)) * 100 if (tp_centroids + fn_centroids) != 0 else 0
+        f1_score_centroids = (2 * (precision_centroids * recall_centroids) / (precision_centroids + recall_centroids))  if (precision_centroids + recall_centroids) != 0 else 0
+
+        # Store metrics for the current threshold in the list
+        results.append({
+            'AnomalyThreshold': AnomalyThreshold,
+            'Número de Componentes': n_components,  
+            'TP': tp_centroids,
+            'FP': fp_centroids,
+            'TN': tn_centroids,
+            'FN': fn_centroids,
+            'Accuracy': accuracy_centroids,
+            'Precision': precision_centroids,
+            'Recall': recall_centroids,
+            'F1 Score': f1_score_centroids,
+            'ConfusionMatrix': confusion_matrix(actual_labels, predicted_labels)
+
+        })
 
 
-# df = pd.DataFrame(results)
-# df.to_excel('resultados_centroid_pca.xlsx', index=False)
+df = pd.DataFrame(results)
+df.to_excel('resultados_centroid_pca.xlsx', index=False)
+
+best_f1_index = df['F1 Score'].idxmax()
+best_threshold = df.loc[best_f1_index, 'AnomalyThreshold']
+best_number_components=df.loc[best_f1_index,'Número de Componentes']
+best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
+
+# Plot the best confusion matrix if it exists
+plt.figure(figsize=(8, 6))
+sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title(f'Best Confusion Matrix: Threshold: {best_threshold} Number of components: {best_number_components}')
+plt.show()
+
+
 
 # ########################################## -- 8 -- Anomaly Detection based on One Class Support Vector Machines WITHOUT PCA ###############################
 
