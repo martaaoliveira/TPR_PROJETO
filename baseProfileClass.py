@@ -280,6 +280,8 @@ for AnomalyThreshold in threshold_values:
     fp_centroids = 0
     tn_centroids = 0
     fn_centroids = 0
+    actual_labels = []
+    predicted_labels = []
 
     # Perform anomaly detection based on the current threshold
     for i in range(nObsTest):
@@ -415,9 +417,19 @@ df.to_excel('resultados_centroid.xlsx', index=False)
 # df = pd.DataFrame(results)
 # df.to_excel('resultados_centroid_pca.xlsx', index=False)
 
-# # ########################################## -- 8 -- Anomaly Detection based on One Class Support Vector Machines WITHOUT PCA ###############################
+# ########################################## -- 8 -- Anomaly Detection based on One Class Support Vector Machines WITHOUT PCA ###############################
 
-# print('\n-- Anomaly Detection based on One Class Support Vector Machines--')
+
+# tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
+# tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
+# tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
+
+
+# nObsTest,nFea=i3Atest.shape
+# for i in range(nObsTest):
+#     print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],AnomResults[L1[i]],AnomResults[L2[i]],AnomResults[L3[i]]))
+    
+#     # Linearprint('\n-- Anomaly Detection based on One Class Support Vector Machines--')
 # # i2train=np.vstack((trainFeatures_marta,trainFeatures_bruno))
 # # i3Atest=np.vstack((testFeatures_bruno,testFeatures_marta,testFeatures_dns))
 # i2train=np.vstack((trainFeatures_bruno))
@@ -435,16 +447,6 @@ df.to_excel('resultados_centroid.xlsx', index=False)
 # AnomResults={-1:"Anomaly",1:"OK"}
 
 # # 
-# tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
-# tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-# tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
-
-
-# nObsTest,nFea=i3Atest.shape
-# for i in range(nObsTest):
-#     print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i,Classes[o3testClass[i][0]],AnomResults[L1[i]],AnomResults[L2[i]],AnomResults[L3[i]]))
-    
-#     # Linear
 #     if AnomResults[L1[i]] == "Anomaly":
 #         if o3testClass[i][0] == 2:  # DNS class
 #             tp_linear += 1 # True Positive
@@ -478,8 +480,7 @@ df.to_excel('resultados_centroid.xlsx', index=False)
 #             fn_poly += 1  # False Negative
 #         else:
 #             tn_poly += 1  # True Negative
-
-
+            
 # accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
 # precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
 
