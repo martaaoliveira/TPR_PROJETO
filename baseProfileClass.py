@@ -556,133 +556,133 @@ plt.show()
 
 
 
-# ##################################################################################### -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
+##################################################################################### -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
 
-# n_components_list = [1, 5, 10, 15, 16, 17, 18, 19, 20, 21]
+n_components_list = [1, 5, 10, 15, 16, 17, 18, 19, 20, 21]
 
-# results = []
+results = []
 
-# # Loop pelos diferentes números de componentes PCA
-# for n_components in n_components_list:
-#     # Reduzindo a dimensionalidade com PCA
-#     pca = PCA(n_components=n_components)
-#     i2train_pca = pca.fit_transform(i2train)
-#     i3Atest_pca = pca.transform(i3Atest)
+# Loop pelos diferentes números de componentes PCA
+for n_components in n_components_list:
+    # Reduzindo a dimensionalidade com PCA
+    pca = PCA(n_components=n_components)
+    i2train_pca = pca.fit_transform(i2train)
+    i3Atest_pca = pca.transform(i3Atest)
 
-#     nu = 0.5
-#     ocsvm = OneClassSVM(gamma='scale', kernel='linear', nu=nu).fit(i2train_pca)
-#     rbf_ocsvm = OneClassSVM(gamma='scale', kernel='rbf', nu=nu).fit(i2train_pca)
-#     poly_ocsvm = OneClassSVM(gamma='scale', kernel='poly', nu=nu, degree=2).fit(i2train_pca)
+    nu = 0.5
+    ocsvm = OneClassSVM(gamma='scale', kernel='linear', nu=nu).fit(i2train_pca)
+    rbf_ocsvm = OneClassSVM(gamma='scale', kernel='rbf', nu=nu).fit(i2train_pca)
+    poly_ocsvm = OneClassSVM(gamma='scale', kernel='poly', nu=nu, degree=2).fit(i2train_pca)
 
-#     L1 = ocsvm.predict(i3Atest_pca)
-#     L2 = rbf_ocsvm.predict(i3Atest_pca)
-#     L3 = poly_ocsvm.predict(i3Atest_pca)
+    L1 = ocsvm.predict(i3Atest_pca)
+    L2 = rbf_ocsvm.predict(i3Atest_pca)
+    L3 = poly_ocsvm.predict(i3Atest_pca)
     
-#     tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
-#     tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-#     tp_svm_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
+    tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
+    tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
+    tp_svm_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
     
-#     AnomResults={-1:"Anomaly",1:"OK"}
+    AnomResults={-1:"Anomaly",1:"OK"}
 
-#     nObsTest,nFea=i3Atest_pca.shape
-#     for i in range(nObsTest):
-#         # Linear
-#         if AnomResults[L1[i]] == "Anomaly":
-#             if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
-#                 fn_linear += 1
-#             else:  # Negative class
-#                 tn_linear += 1
-#         else: #OK
-#             if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
-#                 tp_linear += 1
-#             else:
-#                 fp_linear += 1
+    nObsTest,nFea=i3Atest_pca.shape
+    for i in range(nObsTest):
+        # Linear
+        if AnomResults[L1[i]] == "Anomaly":
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0:  # Positive class
+                fn_linear += 1
+            else:  # Negative class
+                tn_linear += 1
+        else: #OK
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
+                tp_linear += 1
+            else:
+                fp_linear += 1
 
-#         # RBF
-#         if AnomResults[L2[i]] == "Anomaly":
-#             if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
-#                 fn_rbf += 1
-#             else: 
-#                 tn_rbf += 1
-#         else: #OK
-#             if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
-#                 tp_rbf += 1
-#             else:
-#                 fp_rbf += 1
+        # RBF
+        if AnomResults[L2[i]] == "Anomaly":
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
+                fn_rbf += 1
+            else: 
+                tn_rbf += 1
+        else: #OK
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0:
+                tp_rbf += 1
+            else:
+                fp_rbf += 1
 
-#         # Poly
-#         if AnomResults[L3[i]] == "Anomaly":
-#             if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
-#                 fn_poly += 1
-#             else:  # Negative class
-#                 tn_poly += 1
-#         else:
-#             if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :
-#                 tp_svm_poly += 1
-#             else:
-#                 fp_poly += 1
+        # Poly
+        if AnomResults[L3[i]] == "Anomaly":
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :  # Positive class
+                fn_poly += 1
+            else:  # Negative class
+                tn_poly += 1
+        else:
+            if o3testClass[i][0] == 1 or o3testClass[i][0]==0 :
+                tp_svm_poly += 1
+            else:
+                fp_poly += 1
     
-#     accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
-#     precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
+    accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
+    precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
 
-#     accuracy_rbf = ((tp_rbf + tn_rbf) / nObsTest) * 100
-#     precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
+    accuracy_rbf = ((tp_rbf + tn_rbf) / nObsTest) * 100
+    precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
 
-#     accuracy_poly = ((tp_svm_poly + tn_poly) / nObsTest) * 100
-#     precision_poly = (tp_svm_poly / (tp_svm_poly + fp_poly)) * 100 if tp_svm_poly + fp_poly > 0 else 0
+    accuracy_poly = ((tp_svm_poly + tn_poly) / nObsTest) * 100
+    precision_poly = (tp_svm_poly / (tp_svm_poly + fp_poly)) * 100 if tp_svm_poly + fp_poly > 0 else 0
 
-#     recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
-#     recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
-#     recall_poly = (tp_svm_poly / (tp_svm_poly + fn_poly)) * 100 if tp_svm_poly + fn_poly > 0 else 0
+    recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
+    recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
+    recall_poly = (tp_svm_poly / (tp_svm_poly + fn_poly)) * 100 if tp_svm_poly + fn_poly > 0 else 0
 
-#     f1_score_linear = (2 * (precision_linear * recall_linear) / (precision_linear + recall_linear)) / 100 if (precision_linear + recall_linear) != 0 else 0
-#     f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf)) / 100 if (precision_rbf + recall_rbf) != 0 else 0
-#     f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_poly)) / 100 if (precision_poly + recall_poly) != 0 else 0
+    f1_score_linear = (2 * (precision_linear * recall_linear) / (precision_linear + recall_linear)) / 100 if (precision_linear + recall_linear) != 0 else 0
+    f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf)) / 100 if (precision_rbf + recall_rbf) != 0 else 0
+    f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_poly)) / 100 if (precision_poly + recall_poly) != 0 else 0
     
-#     results.append({
-#         'Components': n_components,
-#         'Method': 'Linear',
-#         'TP': tp_linear,
-#         'FP': fp_linear,
-#         'TN': tn_linear,
-#         'FN': fn_linear,
-#         'Accuracy': accuracy_linear,
-#         'Precision': precision_linear,
-#         'Recall': recall_linear,
-#         'F1 Score': f1_score_linear
-#     })
+    results.append({
+        'Components': n_components,
+        'Method': 'Linear',
+        'TP': tp_linear,
+        'FP': fp_linear,
+        'TN': tn_linear,
+        'FN': fn_linear,
+        'Accuracy': accuracy_linear,
+        'Precision': precision_linear,
+        'Recall': recall_linear,
+        'F1 Score': f1_score_linear
+    })
     
-#     results.append({
-#         'Components': n_components,
-#         'Method': 'RBF',
-#         'TP': tp_rbf,
-#         'FP': fp_rbf,
-#         'TN': tn_rbf,
-#         'FN': fn_rbf,
-#         'Accuracy': accuracy_rbf,
-#         'Precision': precision_rbf,
-#         'Recall': recall_rbf,
-#         'F1 Score': f1_score_rbf
-#     })
+    results.append({
+        'Components': n_components,
+        'Method': 'RBF',
+        'TP': tp_rbf,
+        'FP': fp_rbf,
+        'TN': tn_rbf,
+        'FN': fn_rbf,
+        'Accuracy': accuracy_rbf,
+        'Precision': precision_rbf,
+        'Recall': recall_rbf,
+        'F1 Score': f1_score_rbf
+    })
 
-#     results.append({
-#         'Components': n_components,
-#         'Method': 'Poly',
-#         'TP': tp_svm_poly,
-#         'FP': fp_poly,
-#         'TN': tn_poly,
-#         'FN': fn_poly,
-#         'Accuracy': accuracy_poly,
-#         'Precision': precision_poly,
-#         'Recall': f1_score_poly,
-#         'F1 Score': f1_score_poly
-#     })
+    results.append({
+        'Components': n_components,
+        'Method': 'Poly',
+        'TP': tp_svm_poly,
+        'FP': fp_poly,
+        'TN': tn_poly,
+        'FN': fn_poly,
+        'Accuracy': accuracy_poly,
+        'Precision': precision_poly,
+        'Recall': f1_score_poly,
+        'F1 Score': f1_score_poly
+    })
 
-# # DataFrame a partir dos resultados
-# df = pd.DataFrame(results)
+# DataFrame a partir dos resultados
+df = pd.DataFrame(results)
 
-# #DataFrame num  arquivo Excel
-# df.to_excel('resultados_OneClassseSvm_pca.xlsx', index=False)
+#DataFrame num  arquivo Excel
+df.to_excel('resultados_OneClassseSvm_pca.xlsx', index=False)
 
 
 
