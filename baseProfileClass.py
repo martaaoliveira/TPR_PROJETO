@@ -1111,34 +1111,34 @@ testFeatures_dns=features_dns[pD:,:]
 #----------------------------------------------------------Bruno Behaviour----------------------------------------------
 name_excel="bruno_"
 
-i2train=np.vstack((trainFeatures_bruno))
-o2trainClass=np.vstack((oClass_bruno[:pB]))
+#i2train=np.vstack((trainFeatures_bruno))
+#o2trainClass=np.vstack((oClass_bruno[:pB]))
 
-i3Atest=np.vstack((testFeatures_bruno,testFeatures_dns))
+#i3Atest=np.vstack((testFeatures_bruno,testFeatures_dns))
+#i3Ctrain=np.vstack((trainFeatures_bruno,trainFeatures_dns))
 o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
-i3Ctrain=np.vstack((trainFeatures_bruno,trainFeatures_dns))
 o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
 
 #centroids_distances(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-#one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-#one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+#svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+#svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+#neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+#neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
 #----------------------------------------------------------Marta Behaviour----------------------------------------------
 name_excel="marta_"
 
-i2train=np.vstack((trainFeatures_marta))
-o2trainClass=np.vstack((oClass_marta[:pM]))
+#i2train=np.vstack((trainFeatures_marta))
+#o2trainClass=np.vstack((oClass_marta[:pM]))
+#i3Ctrain=np.vstack((trainFeatures_marta,trainFeatures_dns))
+#i3Atest=np.vstack((testFeatures_marta,testFeatures_dns))
 
-
-i3Atest=np.vstack((testFeatures_marta,testFeatures_dns))
 o3testClass=np.vstack((oClass_marta[pM:],oClass_dns[pD:]))
-i3Ctrain=np.vstack((trainFeatures_marta,trainFeatures_dns))
 o3trainClass=np.vstack((oClass_marta[:pM],oClass_dns[:pD]))
+
 
 #centroids_distances(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
