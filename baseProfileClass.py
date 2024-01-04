@@ -553,7 +553,7 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
 
     nObsTest, nFea = i3Ctest.shape
 
-    AnomResults = {2.0: "Anomaly", 0: "OK", 1.0:"OK"}  # Bruno is 0 and DNS is 2 and Marta "1.0"
+    AnomResults = {2.0: "Anomaly", 0: "OK"}  
 
     for i in range(nObsTest):
         actual_labels_linear.append(o3testClass[i][0])
@@ -968,7 +968,7 @@ features_dns=np.loadtxt("features_dns_tunneling.dat")
 #It assigns class labels (0 for Bruno, 1 for Marta, and 2 for dns_tunneling) to the respective datasets
 #cada classe vai conter:mean, median and standard deviation  and also the silence periods features(mean median and deviation) and percentis for upload and download 
 oClass_bruno=np.ones((len(features_bruno),1))*0
-oClass_marta=np.ones((len(features_marta),1))*1
+oClass_marta=np.ones((len(features_marta),1))*0
 oClass_dns=np.ones((len(features_dns),1))*2
 
 
