@@ -117,14 +117,14 @@ def centroids_distances(trainFeatures, o2trainClass, testFeatures_normal, testFe
                 if o3testClass[i][0] == 2.0:
                     tp_centroids += 1
                 else:
-                    fp_centroids += 1
+                    tn_centroids += 1
             else:
                 result = "OK"
                 predicted_labels.append(0.0)
                 if o3testClass[i][0] == 2.0:
-                    fn_centroids += 1
+                    fp_centroids += 1
                 else:
-                    tn_centroids += 1
+                    fn_centroids += 1
 
         accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
         precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
@@ -153,7 +153,7 @@ def centroids_distances(trainFeatures, o2trainClass, testFeatures_normal, testFe
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix (Threshold: {best_threshold})')
@@ -208,14 +208,14 @@ def centroids_distances_with_pca(trainFeatures, o2trainClass, testFeatures_norma
                     if o3testClass[i][0] == 2.0:
                         tp_centroids += 1
                     else:
-                        fp_centroids += 1
+                        tn_centroids += 1
                 else:
                     result = "OK"
                     predicted_labels.append(0.0)
                     if o3testClass[i][0] == 2.0:
-                        fn_centroids += 1
+                        fp_centroids += 1
                     else:
-                        tn_centroids += 1
+                        fn_centroids += 1
 
             accuracy_centroids = ((tp_centroids + tn_centroids) / nObsTest) * 100
             precision_centroids = (tp_centroids / (tp_centroids + fp_centroids)) * 100 if (tp_centroids + fp_centroids) != 0 else 0
@@ -245,7 +245,7 @@ def centroids_distances_with_pca(trainFeatures, o2trainClass, testFeatures_norma
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
 
     plt.figure(figsize=(8, 6))
-    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d', xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d', xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix: Threshold: {best_threshold} Number of components: {best_number_components}')
@@ -296,13 +296,13 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
             if o3testClass[i][0] == 2:
                 tp_linear += 1
             else:
-                fp_linear += 1
+                tn_linear += 1
         else:
             predicted_labels_linear.append(0.0)
             if o3testClass[i][0] == 2:
-                fn_linear += 1
+                fp_linear += 1
             else:
-                tn_linear += 1
+                fn_linear += 1
 
         # RBF
         if AnomResults[L2[i]] == "Anomaly":
@@ -310,13 +310,13 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
             if o3testClass[i][0] == 2:
                 tp_rbf += 1
             else:
-                fp_rbf += 1
+                tn_rbf += 1
         else:
             predicted_labels_rbf.append(0.0)
             if o3testClass[i][0] == 2:
-                fn_rbf += 1
+                fp_rbf += 1
             else:
-                tn_rbf += 1
+                fn_rbf += 1
 
         # Poly
         if AnomResults[L3[i]] == "Anomaly":
@@ -324,13 +324,13 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
             if o3testClass[i][0] == 2:
                 tp_poly += 1
             else:
-                fp_poly += 1
+                tn_poly += 1
         else:
             predicted_labels_poly.append(0.0)
             if o3testClass[i][0] == 2:
-                fn_poly += 1
+                fp_poly += 1
             else:
-                tn_poly += 1
+                fn_poly += 1
 
     accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
     precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
@@ -374,15 +374,14 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
     best_f1_index = df['F1 Score'].idxmax()
 
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
-    best_method = df.loc[best_f1_index, 'Method']
 
     # Plot the best confusion matrix if it exists
     plt.figure(figsize=(8, 6))
-    sns.heatmap(best_confusion_matrix, annot=True, cmap='Oranges', fmt='d',
-                xticklabels=['Negative', 'Positive'], yticklabels=['False', 'True'])
+    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
+                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
     plt.xlabel('Predicted label')
     plt.ylabel('Actual label')
-    plt.title(f'Best Confusion Matrix'+ name_excel+'(Kernel:{best_method} )')
+    plt.title(f'Best Confusion Matrix One Class Support\n Best Kernel: RBF')
     plt.show()
 
 
@@ -434,13 +433,13 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
                 if o3testClass[i][0] == 2:
                     tp_linear += 1
                 else:
-                    fp_linear += 1
+                    tn_linear += 1
             else:
                 predicted_labels_linear.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fn_linear += 1
+                    fp_linear += 1
                 else:
-                    tn_linear += 1
+                    fn_linear += 1
 
             # RBF
             if AnomResults[L2[i]] == "Anomaly":
@@ -448,13 +447,13 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
                 if o3testClass[i][0] == 2:
                     tp_rbf += 1
                 else:
-                    fp_rbf += 1
+                    tn_rbf += 1
             else:
                 predicted_labels_rbf.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fn_rbf += 1
+                    fp_rbf += 1
                 else:
-                    tn_rbf += 1
+                    fn_rbf += 1
 
             # Poly
             if AnomResults[L3[i]] == "Anomaly":
@@ -462,13 +461,13 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
                 if o3testClass[i][0] == 2:
                     tp_poly += 1
                 else:
-                    fp_poly += 1
+                    tn_poly += 1
             else:
                 predicted_labels_poly.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fn_poly += 1
+                    fp_poly += 1
                 else:
-                    tn_poly += 1
+                    fn_poly += 1
 
         accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
         precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
@@ -516,14 +515,15 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
     best_f1_index = df['F1 Score'].idxmax()
 
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
-
+    best_number_components=df.loc[best_f1_index,'Number components']
+    best_kernel = df.loc[best_f1_index,'Method']
     # Plot the best confusion matrix if it exists
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix (Components: {n_components})')
+    plt.title(f'Best Confusion Matrix One Class Support with pca: {best_number_components} and Kernel {best_kernel}')
     plt.show()
 
 ################################################################## -- 10 Classification based on Support Vector Machines without PCA -- #####################################################################################
@@ -565,13 +565,13 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
             if o3testClass[i][0] == 2:
                 tp_linear += 1
             else:
-                fp_linear += 1
+                tn_linear += 1
         else:
             predicted_labels_linear.append(0.0)
             if o3testClass[i][0] == 2:
-                fn_linear += 1
+                fp_linear += 1
             else:
-                tn_linear += 1
+                fn_linear += 1
 
         # RBF
         if AnomResults[L2[i]] == "Anomaly":
@@ -579,13 +579,13 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
             if o3testClass[i][0] == 2:
                 tp_rbf += 1
             else:
-                fp_rbf += 1
+                tn_rbf += 1
         else:
             predicted_labels_rbf.append(0.0)
             if o3testClass[i][0] == 2:
-                fn_rbf += 1
+                fp_rbf += 1
             else:
-                tn_rbf += 1
+                fn_rbf += 1
 
         # Poly
         if AnomResults[L3[i]] == "Anomaly":
@@ -593,13 +593,13 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
             if o3testClass[i][0] == 2:
                 tp_poly += 1
             else:
-                fp_poly += 1
+                tn_poly += 1
         else:
             predicted_labels_poly.append(0.0)
             if o3testClass[i][0] == 2:
-                fn_poly += 1
+                fp_poly += 1
             else:
-                tn_poly += 1
+                fn_poly += 1
 
     accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
     precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
@@ -645,13 +645,15 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
     best_f1_index = df['F1 Score'].idxmax()
 
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
+    
+    best_kernel = df.loc[best_f1_index,'Method']
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix')
+    plt.title(f'Best Confusion Matrix based on Support Vector machines with kernel {best_kernel}')
     plt.show()
 
 ######################################### -- 10.2 Classification based on Support Vector Machines with PCA -- #####################################################################################
@@ -702,15 +704,15 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
             if AnomResults[L1[i]] == "Anomaly":
                 predicted_labels_linear.append(2.0)  # Predicted as DNS (anomaly)
                 if o3testClass[i][0] == 2:  # DNS class
-                    tp_linear += 1  # True Positive
+                    tp_linear += 1  
                 else:  # Marta/Bruno class
-                    fp_linear += 1  # False Positive
+                    tn_linear += 1  
             else:  # OK
                 predicted_labels_linear.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fn_linear += 1  # False Negative
+                    fp_linear += 1  
                 else:
-                    tn_linear += 1  # True Negative
+                    fn_linear += 1  
 
             # RBF
             if AnomResults[L2[i]] == "Anomaly":
@@ -718,26 +720,26 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
                 if o3testClass[i][0] == 2:  # DNS class
                     tp_rbf += 1  # True Positive
                 else:  # Marta/Bruno class
-                    fp_rbf += 1  # False Positive
+                    tn_rbf += 1  # False Positive
             else:  # OK
                 predicted_labels_rbf.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fn_rbf += 1  # False Negative
+                    fp_rbf += 1  # False Negative
                 else:
-                    tn_rbf += 1  # True Negative
+                    fn_rbf += 1  # True Negative
             # Poly
             if AnomResults[L3[i]] == "Anomaly":
                 predicted_labels_poly.append(2.0)  # Predicted as DNS (anomaly)
                 if o3testClass[i][0] == 2:  # DNS class
                     tp_poly += 1  # True Positive
                 else:  # Marta/Bruno class
-                    fp_poly += 1  # False Positive
+                    tn_poly += 1  # False Positive
             else:  # OK
                 predicted_labels_poly.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fn_poly += 1  # False Negative
+                    fp_poly += 1  # False Negative
                 else:
-                    tn_poly += 1  # True Negative
+                    fn_poly += 1  # True Negative
 
         accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
         precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
@@ -786,14 +788,16 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
     best_f1_index = df['F1 Score'].idxmax()
 
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
+    best_kernel = df.loc[best_f1_index,'Method']
+    best_number_components=df.loc[best_f1_index,'Number components']
 
     # Plot the best confusion matrix if it exists
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix (Components: {n_components})')
+    plt.title(f'Best Confusion Matrix based on Support Vector machines with kernel {best_kernel} and with pca {best_number_components} ')
     plt.show()
 
 ################################### -- 12 Classification based on Neural Networks without pca -- #########################################################################################################
@@ -812,8 +816,6 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
     LT = clf.predict(i3CtestN)
 
     tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
-    acc_nn = []
-    pre_nn = []
     actual_labels = []
     predicted_labels = []
     results = []
@@ -821,22 +823,21 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
 
     for i in range(nObsTest):
         actual_labels.append(o3testClass[i][0])
-        # print(len(actual_labels))
-        # print('Obs: {:2} ({:<8}): Classification->{}'.format(i,Classes[o3testClass[i][0]],Classes[LT[i]]))
         if LT[i] == o3testClass[i][0]:
-            if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
-                predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
-                tp_nn += 1
-            else:
-                predicted_labels.append(0.0)  # Predicted as Normal
-                fp_nn += 1
+                if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
+                    predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
+                    tp_nn += 1
+                else:
+                    predicted_labels.append(0.0)  # Predicted as Normal
+                    tn_nn += 1
         else:
             if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
                 predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
-                fn_nn += 1
+                fp_nn += 1
             else:
                 predicted_labels.append(0.0)  # Predicted as Normal
-                tn_nn += 1
+                fn_nn += 1
+
 
     accuracy_nn = ((tp_nn + tn_nn) / (tp_nn + tn_nn + fp_nn + fn_nn)) * 100
     precision_nn = (tp_nn / (tp_nn + fp_nn)) * 100 if (tp_nn + fp_nn) != 0 else 0
@@ -847,16 +848,14 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
     confusionMatrix = confusion_matrix(actual_labels, predicted_labels)
 
     results.append({
-        'Accuracy Neural Network': accuracy_nn,
-        'Precision Neural Network': precision_nn,
-        'Recall Neural Network': recall_nn,
-        'F1 Score': f1_score_nn,
         'TP': tp_nn,
         'FP': fp_nn,
         'TN': tn_nn,
         'FN': fn_nn,
+        'Recall': recall_nn,
         'Accuracy': accuracy_nn,
         'Precision': precision_nn,
+        'F1 Score': f1_score_nn,
         'Confusion Matrix': confusionMatrix,
     })
 
@@ -865,10 +864,10 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix')
+    plt.title(f'Best Confusion Matrix based on Neural Networks without PCA')
     plt.show()
 
 
@@ -896,8 +895,6 @@ def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_no
         LT = clf.predict(i3CtestN_pca)
 
         tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
-        acc_nn = []
-        pre_nn = []
         actual_labels = []
         predicted_labels = []
 
@@ -911,14 +908,14 @@ def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_no
                     tp_nn += 1
                 else:
                     predicted_labels.append(0.0)  # Predicted as Normal
-                    fp_nn += 1
+                    tn_nn += 1
             else:
                 if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
                     predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
-                    fn_nn += 1
+                    fp_nn += 1
                 else:
                     predicted_labels.append(0.0)  # Predicted as Normal
-                    tn_nn += 1
+                    fn_nn += 1
 
         accuracy_nn = ((tp_nn + tn_nn) / (tp_nn + tn_nn + fp_nn + fn_nn)) * 100
         precision_nn = (tp_nn / (tp_nn + fp_nn)) * 100 if (tp_nn + fp_nn) != 0 else 0
@@ -926,26 +923,36 @@ def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_no
         f1_score_nn = (2 * (precision_nn * recall_nn)) / (precision_nn + recall_nn) if (
                 precision_nn + recall_nn) != 0 else 0
 
+        confusionMatrix = confusion_matrix(actual_labels, predicted_labels)
+
         results.append({
             'Components': n_components,
-            'Accuracy Neural Network': accuracy_nn,
-            'Precision Neural Network': precision_nn,
-            'Recall Neural Network': recall_nn,
-            'F1 Score Neural Network': f1_score_nn
+            'TP': tp_nn,
+            'FP': fp_nn,
+            'TN': tn_nn,
+            'FN': fn_nn,
+            'Recall': recall_nn,
+            'Accuracy': accuracy_nn,
+            'Precision': precision_nn,
+            'F1 Score': f1_score_nn,
+            'Confusion Matrix': confusionMatrix,
         })
 
-    df_nn = pd.DataFrame(results)
+    df = pd.DataFrame(results)
 
-    df_nn.to_excel(name_excel+'_redes_neurais_pca.xlsx', index=False)
+    df.to_excel(name_excel+'_redes_neurais_pca.xlsx', index=False)
+    
+    best_f1_index = df['F1 Score'].idxmax()
 
-    confusionMatrix = confusion_matrix(actual_labels, predicted_labels)
+    best_number_components=df.loc[best_f1_index,'Components']
+
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['DNS', 'Normal'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix')
+    plt.title(f'Best Confusion Matrix based on Neural Networks with pca {best_number_components}')
     plt.show()
 
 ########### Main Code #############
@@ -962,10 +969,10 @@ nfig=1
 ## -- 2 -- ##
 features_bruno=np.loadtxt("features_bruno.dat")
 features_marta=np.loadtxt("features_marta.dat")
-features_dns=np.loadtxt("features_dns_tunneling.dat")
+features_dns=np.loadtxt("features_dns_tunneling_smart.dat")
 
 
-#It assigns class labels (0 for Bruno, 1 for Marta, and 2 for dns_tunneling) to the respective datasets
+#It assigns class labels (0 for Bruno and  Marta, and 2 for dns_tunneling) to the respective datasets
 #cada classe vai conter:mean, median and standard deviation  and also the silence periods features(mean median and deviation) and percentis for upload and download 
 oClass_bruno=np.ones((len(features_bruno),1))*0
 oClass_marta=np.ones((len(features_marta),1))*0
@@ -1108,7 +1115,7 @@ testFeatures_bruno=features_bruno[pB:,:]
 testFeatures_marta=features_marta[pM:,:]
 testFeatures_dns=features_dns[pD:,:]
 
-#----------------------------------------------------------Bruno Behaviour----------------------------------------------
+#----------------------------------------------------------Testing Bruno Behaviour----------------------------------------------
 name_excel="bruno_"
 
 #i2train=np.vstack((trainFeatures_bruno))
@@ -1116,24 +1123,24 @@ name_excel="bruno_"
 
 #i3Atest=np.vstack((testFeatures_bruno,testFeatures_dns))
 #i3Ctrain=np.vstack((trainFeatures_bruno,trainFeatures_dns))
-o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
-o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
+#o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
+#o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
 
 #centroids_distances(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+#one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+#one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 #svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 #svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 #neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 #neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
-#----------------------------------------------------------Marta Behaviour----------------------------------------------
-name_excel="marta_"
+#----------------------------------------------------------Testing Marta Behaviour----------------------------------------------
+name_excel="marta_smart_"
 
 #i2train=np.vstack((trainFeatures_marta))
-#o2trainClass=np.vstack((oClass_marta[:pM]))
-#i3Ctrain=np.vstack((trainFeatures_marta,trainFeatures_dns))
+o2trainClass=np.vstack((oClass_marta[:pM]))
+i3Ctrain=np.vstack((trainFeatures_marta,trainFeatures_dns))
 #i3Atest=np.vstack((testFeatures_marta,testFeatures_dns))
 
 o3testClass=np.vstack((oClass_marta[pM:],oClass_dns[pD:]))
@@ -1142,12 +1149,12 @@ o3trainClass=np.vstack((oClass_marta[:pM],oClass_dns[:pD]))
 
 #centroids_distances(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-#one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 #one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-# svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
 
 # # # Wait for user input before exiting
