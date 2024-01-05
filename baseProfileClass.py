@@ -24,6 +24,7 @@ import time
 import sys
 import warnings
 import pandas as pd
+import os
 
 warnings.filterwarnings('ignore')
 
@@ -296,13 +297,13 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
             if o3testClass[i][0] == 2:
                 tp_linear += 1
             else:
-                tn_linear += 1
+                fp_linear += 1
         else:
             predicted_labels_linear.append(0.0)
             if o3testClass[i][0] == 2:
-                fp_linear += 1
-            else:
                 fn_linear += 1
+            else:
+                tn_linear += 1
 
         # RBF
         if AnomResults[L2[i]] == "Anomaly":
@@ -310,13 +311,14 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
             if o3testClass[i][0] == 2:
                 tp_rbf += 1
             else:
-                tn_rbf += 1
+                fp_rbf += 1
         else:
             predicted_labels_rbf.append(0.0)
             if o3testClass[i][0] == 2:
-                fp_rbf += 1
-            else:
                 fn_rbf += 1
+            else:
+                tn_rbf += 1
+
 
         # Poly
         if AnomResults[L3[i]] == "Anomaly":
@@ -324,13 +326,13 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
             if o3testClass[i][0] == 2:
                 tp_poly += 1
             else:
-                tn_poly += 1
+                fp_poly += 1
         else:
             predicted_labels_poly.append(0.0)
             if o3testClass[i][0] == 2:
-                fp_poly += 1
-            else:
                 fn_poly += 1
+            else:
+                tn_poly += 1
 
     accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
     precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
@@ -368,7 +370,8 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
     df = pd.DataFrame(results)
 
     # Save the DataFrame to an Excel file
-    df.to_excel(name_excel+'resultados_OneClassSVM.xlsx', index=False)
+    # df.to_excel(name_excel+'resultados_OneClassSVM.xlsx', index=False)
+    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_OneClassSVM.xlsx'), index=False)
 
     # Find the index of the row with the best F1 score
     best_f1_index = df['F1 Score'].idxmax()
@@ -388,7 +391,7 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
 
 ##################################################################################### -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
 def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns, o3testClass,name_excel):
-    n_components_list = [1, 5, 10, 15, 16, 17, 18, 19, 20, 21]
+    n_components_list = [1, 5, 10, 15, 20, 30, 40]
 
     results = []
     all_results = []
@@ -433,13 +436,13 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
                 if o3testClass[i][0] == 2:
                     tp_linear += 1
                 else:
-                    tn_linear += 1
+                    fp_linear += 1
             else:
                 predicted_labels_linear.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fp_linear += 1
-                else:
                     fn_linear += 1
+                else:
+                    tn_linear += 1
 
             # RBF
             if AnomResults[L2[i]] == "Anomaly":
@@ -447,13 +450,14 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
                 if o3testClass[i][0] == 2:
                     tp_rbf += 1
                 else:
-                    tn_rbf += 1
+                    fp_rbf += 1
             else:
                 predicted_labels_rbf.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fp_rbf += 1
-                else:
                     fn_rbf += 1
+                else:
+                    tn_rbf += 1
+
 
             # Poly
             if AnomResults[L3[i]] == "Anomaly":
@@ -461,13 +465,13 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
                 if o3testClass[i][0] == 2:
                     tp_poly += 1
                 else:
-                    tn_poly += 1
+                    fp_poly += 1
             else:
                 predicted_labels_poly.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fp_poly += 1
-                else:
                     fn_poly += 1
+                else:
+                    tn_poly += 1
 
         accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
         precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
@@ -509,7 +513,9 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
     df = pd.concat([pd.DataFrame(res) for res in all_results], ignore_index=True)
 
     # DataFrame to an Excel file
-    df.to_excel(name_excel+'resultados_OneClassSVM_pca.xlsx', index=False)
+    # df.to_excel(name_excel+'resultados_OneClassSVM_pca.xlsx', index=False)
+    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_OneClassSVM_pca.xlsx'), index=False)
+
 
     # Find the index of the row with the best F1 score
     best_f1_index = df['F1 Score'].idxmax()
@@ -559,19 +565,20 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
         actual_labels_linear.append(o3testClass[i][0])
         actual_labels_rbf.append(o3testClass[i][0])
         actual_labels_poly.append(o3testClass[i][0])
+
         # Linear
         if AnomResults[L1[i]] == "Anomaly":
             predicted_labels_linear.append(2.0)
             if o3testClass[i][0] == 2:
                 tp_linear += 1
             else:
-                tn_linear += 1
+                fp_linear += 1
         else:
             predicted_labels_linear.append(0.0)
             if o3testClass[i][0] == 2:
-                fp_linear += 1
-            else:
                 fn_linear += 1
+            else:
+                tn_linear += 1
 
         # RBF
         if AnomResults[L2[i]] == "Anomaly":
@@ -579,13 +586,14 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
             if o3testClass[i][0] == 2:
                 tp_rbf += 1
             else:
-                tn_rbf += 1
+                fp_rbf += 1
         else:
             predicted_labels_rbf.append(0.0)
             if o3testClass[i][0] == 2:
-                fp_rbf += 1
-            else:
                 fn_rbf += 1
+            else:
+                tn_rbf += 1
+
 
         # Poly
         if AnomResults[L3[i]] == "Anomaly":
@@ -593,13 +601,13 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
             if o3testClass[i][0] == 2:
                 tp_poly += 1
             else:
-                tn_poly += 1
+                fp_poly += 1
         else:
             predicted_labels_poly.append(0.0)
             if o3testClass[i][0] == 2:
-                fp_poly += 1
-            else:
                 fn_poly += 1
+            else:
+                tn_poly += 1
 
     accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
     precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
@@ -640,7 +648,8 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
 
     df = pd.DataFrame(results)
 
-    df.to_excel(name_excel+'resultados_SVM.xlsx', index=False)
+    # df.to_excel(name_excel+'resultados_SVM.xlsx', index=False)
+    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_SVM.xlsx'), index=False)
 
     best_f1_index = df['F1 Score'].idxmax()
 
@@ -700,46 +709,49 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
             actual_labels_linear.append(o3testClass[i][0])
             actual_labels_rbf.append(o3testClass[i][0])
             actual_labels_poly.append(o3testClass[i][0])
+
             # Linear
             if AnomResults[L1[i]] == "Anomaly":
-                predicted_labels_linear.append(2.0)  # Predicted as DNS (anomaly)
-                if o3testClass[i][0] == 2:  # DNS class
-                    tp_linear += 1  
-                else:  # Marta/Bruno class
-                    tn_linear += 1  
-            else:  # OK
+                predicted_labels_linear.append(2.0)
+                if o3testClass[i][0] == 2:
+                    tp_linear += 1
+                else:
+                    fp_linear += 1
+            else:
                 predicted_labels_linear.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fp_linear += 1  
+                    fn_linear += 1
                 else:
-                    fn_linear += 1  
+                    tn_linear += 1
 
             # RBF
             if AnomResults[L2[i]] == "Anomaly":
-                predicted_labels_rbf.append(2.0)  # Predicted as DNS (anomaly)
-                if o3testClass[i][0] == 2:  # DNS class
-                    tp_rbf += 1  # True Positive
-                else:  # Marta/Bruno class
-                    tn_rbf += 1  # False Positive
-            else:  # OK
+                predicted_labels_rbf.append(2.0)
+                if o3testClass[i][0] == 2:
+                    tp_rbf += 1
+                else:
+                    fp_rbf += 1
+            else:
                 predicted_labels_rbf.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fp_rbf += 1  # False Negative
+                    fn_rbf += 1
                 else:
-                    fn_rbf += 1  # True Negative
+                    tn_rbf += 1
+
+
             # Poly
             if AnomResults[L3[i]] == "Anomaly":
-                predicted_labels_poly.append(2.0)  # Predicted as DNS (anomaly)
-                if o3testClass[i][0] == 2:  # DNS class
-                    tp_poly += 1  # True Positive
-                else:  # Marta/Bruno class
-                    tn_poly += 1  # False Positive
-            else:  # OK
+                predicted_labels_poly.append(2.0)
+                if o3testClass[i][0] == 2:
+                    tp_poly += 1
+                else:
+                    fp_poly += 1
+            else:
                 predicted_labels_poly.append(0.0)
                 if o3testClass[i][0] == 2:
-                    fp_poly += 1  # False Negative
+                    fn_poly += 1
                 else:
-                    fn_poly += 1  # True Negative
+                    tn_poly += 1
 
         accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
         precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
@@ -782,7 +794,9 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
 
     df = pd.concat([pd.DataFrame(res) for res in all_results], ignore_index=True)
 
-    df.to_excel(name_excel+'resultados_SVM_PCA.xlsx', index=False)
+    # df.to_excel(name_excel+'resultados_SVM_PCA.xlsx', index=False)
+    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_SVM_PCA.xlsx'), index=False)
+
 
     # Find the index of the row with the best F1 score
     best_f1_index = df['F1 Score'].idxmax()
@@ -860,7 +874,9 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
     })
 
     df = pd.DataFrame(results)
-    df.to_excel(name_excel+'resultados_redes_neurais.xlsx', index=False)
+    # df.to_excel(name_excel+'resultados_redes_neurais.xlsx', index=False)
+    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_redes_neurais.xlsx'), index=False)
+
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
@@ -873,7 +889,7 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
 
 ################################### -- 12 Classification based on Neural Networks with pca -- ##################################################
 def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_normal, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel):
-    components_to_test = [1, 5, 10, 15, 20]
+    components_to_test = [1, 5, 10, 15, 20, 30, 40]
 
     results = []
     i3train = np.vstack((trainFeatures_normal, trainFeatures_dns))
@@ -940,8 +956,8 @@ def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_no
 
     df = pd.DataFrame(results)
 
-    df.to_excel(name_excel+'_redes_neurais_pca.xlsx', index=False)
-    
+    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_redes_neurais_pca.xlsx'), index=False)
+
     best_f1_index = df['F1 Score'].idxmax()
 
     best_number_components=df.loc[best_f1_index,'Components']
@@ -969,7 +985,7 @@ nfig=1
 ## -- 2 -- ##
 features_bruno=np.loadtxt("features_bruno.dat")
 features_marta=np.loadtxt("features_marta.dat")
-features_dns=np.loadtxt("features_dns_tunneling_smart.dat")
+features_dns=np.loadtxt("features_dns_tunneling.dat")
 
 
 #It assigns class labels (0 for Bruno and  Marta, and 2 for dns_tunneling) to the respective datasets
@@ -1116,27 +1132,27 @@ testFeatures_marta=features_marta[pM:,:]
 testFeatures_dns=features_dns[pD:,:]
 
 #----------------------------------------------------------Testing Bruno Behaviour----------------------------------------------
-name_excel="bruno_"
+name_excel="bruno_dumb"
 
-#i2train=np.vstack((trainFeatures_bruno))
-#o2trainClass=np.vstack((oClass_bruno[:pB]))
+i2train=np.vstack((trainFeatures_bruno))
+o2trainClass=np.vstack((oClass_bruno[:pB]))
 
-#i3Atest=np.vstack((testFeatures_bruno,testFeatures_dns))
-#i3Ctrain=np.vstack((trainFeatures_bruno,trainFeatures_dns))
-#o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
-#o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
+i3Atest=np.vstack((testFeatures_bruno,testFeatures_dns))
+i3Ctrain=np.vstack((trainFeatures_bruno,trainFeatures_dns))
+o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
+o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
 
 #centroids_distances(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-#one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-#one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-#svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-#svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-#neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-#neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
 #----------------------------------------------------------Testing Marta Behaviour----------------------------------------------
-name_excel="marta_smart_"
+name_excel="marta_dumb"
 
 #i2train=np.vstack((trainFeatures_marta))
 o2trainClass=np.vstack((oClass_marta[:pM]))
@@ -1149,12 +1165,12 @@ o3trainClass=np.vstack((oClass_marta[:pM],oClass_dns[:pD]))
 
 #centroids_distances(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+# one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 #one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
 
 # # # Wait for user input before exiting
