@@ -872,16 +872,18 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
         'Accuracy': accuracy_nn,
         'Precision': precision_nn,
         'F1 Score': f1_score_nn,
-        'Confusion Matrix': confusionMatrix,
+        'ConfusionMatrix': confusionMatrix,
     })
 
     df = pd.DataFrame(results)
     # df.to_excel(name_excel+'resultados_redes_neurais.xlsx', index=False)
     df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_redes_neurais.xlsx'), index=False)
+    best_f1_index = df['F1 Score'].idxmax()
+    best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
 
 
     plt.figure(figsize=(8, 6))
-    sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
+    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
                 xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
@@ -953,7 +955,7 @@ def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_no
             'Accuracy': accuracy_nn,
             'Precision': precision_nn,
             'F1 Score': f1_score_nn,
-            'Confusion Matrix': confusionMatrix,
+            'ConfusionMatrix': confusionMatrix,
         })
 
     df = pd.DataFrame(results)
@@ -964,9 +966,10 @@ def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_no
 
     best_number_components=df.loc[best_f1_index,'Components']
 
+    best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
 
     plt.figure(figsize=(8, 6))
-    sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
+    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
                 xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
@@ -987,7 +990,7 @@ nfig=1
 ## -- 2 -- ##
 features_bruno=np.loadtxt("features_bruno.dat")
 features_marta=np.loadtxt("features_marta.dat")
-features_dns=np.loadtxt("features_dns_tunneling_smart.dat")
+features_dns=np.loadtxt("features_dns_tunneling.dat")
 
 
 #It assigns class labels (0 for Bruno and  Marta, and 2 for dns_tunneling) to the respective datasets
@@ -1134,15 +1137,15 @@ testFeatures_marta=features_marta[pM:,:]
 testFeatures_dns=features_dns[pD:,:]
 
 #----------------------------------------------------------Testing Bruno Behaviour----------------------------------------------
-#name_excel="bruno_smart"
+name_excel="bruno_dumb"
 
 # i2train=np.vstack((trainFeatures_bruno))
 # o2trainClass=np.vstack((oClass_bruno[:pB]))
 
 # i3Atest=np.vstack((testFeatures_bruno,testFeatures_dns))
 # i3Ctrain=np.vstack((trainFeatures_bruno,trainFeatures_dns))
-#o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
-#o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
+o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
+o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
 
 #centroids_distances(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
@@ -1150,29 +1153,29 @@ testFeatures_dns=features_dns[pD:,:]
 # one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 # svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
 #----------------------------------------------------------Testing Marta Behaviour----------------------------------------------
-name_excel="marta_smart"
+#name_excel="marta_smart"
 
 #i2train=np.vstack((trainFeatures_marta))
 #o2trainClass=np.vstack((oClass_marta[:pM]))
 #i3Ctrain=np.vstack((trainFeatures_marta,trainFeatures_dns))
 #i3Atest=np.vstack((testFeatures_marta,testFeatures_dns))
 
-o3testClass=np.vstack((oClass_marta[pM:],oClass_dns[pD:]))
-o3trainClass=np.vstack((oClass_marta[:pM],oClass_dns[:pD]))
+# o3testClass=np.vstack((oClass_marta[pM:],oClass_dns[pD:]))
+# o3trainClass=np.vstack((oClass_marta[:pM],oClass_dns[:pD]))
 
 
 #centroids_distances(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+#one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+#one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+#svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+#svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+#neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+#neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
 #----------------------------------------------------------Testing Bruno vs Marta to check if no Anomalies are found----------------------------------------------
 #name_excel="marta_bruno"
