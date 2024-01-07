@@ -154,7 +154,7 @@ def centroids_distances(trainFeatures, o2trainClass, testFeatures_normal, testFe
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix (Threshold: {best_threshold})')
@@ -246,7 +246,7 @@ def centroids_distances_with_pca(trainFeatures, o2trainClass, testFeatures_norma
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
 
     plt.figure(figsize=(8, 6))
-    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d', xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
+    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d', xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix: Threshold: {best_threshold} Number of components: {best_number_components}')
@@ -381,7 +381,7 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
     # Plot the best confusion matrix if it exists
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted label')
     plt.ylabel('Actual label')
     plt.title(f'Best Confusion Matrix One Class Support\n Best Kernel: RBF')
@@ -391,7 +391,7 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
 
 ##################################################################################### -- 8.2 -- Anomaly Detection based on One Class Support Vector Machines with pca###############################
 def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns, o3testClass,name_excel):
-    n_components_list = [1, 5, 10, 15, 20, 30, 40]
+    n_components_list = [1, 5, 10, 15, 20, 25]
 
     results = []
     all_results = []
@@ -526,7 +526,7 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
     # Plot the best confusion matrix if it exists
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix One Class Support with pca: {best_number_components} and Kernel {best_kernel}')
@@ -659,7 +659,7 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix based on Support Vector machines with kernel {best_kernel}')
@@ -808,7 +808,7 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
     # Plot the best confusion matrix if it exists
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix based on Support Vector machines with kernel {best_kernel} and with pca {best_number_components} ')
@@ -880,7 +880,7 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix based on Neural Networks without PCA')
@@ -965,7 +965,7 @@ def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_no
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS'], yticklabels=['Normal', 'DNS'])
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix based on Neural Networks with pca {best_number_components}')
@@ -985,7 +985,7 @@ nfig=1
 ## -- 2 -- ##
 features_bruno=np.loadtxt("features_bruno.dat")
 features_marta=np.loadtxt("features_marta.dat")
-features_dns=np.loadtxt("features_dns_tunneling.dat")
+features_dns=np.loadtxt("features_dns_tunneling_smart.dat")
 
 
 #It assigns class labels (0 for Bruno and  Marta, and 2 for dns_tunneling) to the respective datasets
@@ -1132,7 +1132,7 @@ testFeatures_marta=features_marta[pM:,:]
 testFeatures_dns=features_dns[pD:,:]
 
 #----------------------------------------------------------Testing Bruno Behaviour----------------------------------------------
-name_excel="bruno_dumb"
+name_excel="bruno_smart"
 
 i2train=np.vstack((trainFeatures_bruno))
 o2trainClass=np.vstack((oClass_bruno[:pB]))
@@ -1144,15 +1144,15 @@ o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
 
 #centroids_distances(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_bruno, o2trainClass, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+# one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+# svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
 #----------------------------------------------------------Testing Marta Behaviour----------------------------------------------
-name_excel="marta_dumb"
+name_excel="marta_smart"
 
 #i2train=np.vstack((trainFeatures_marta))
 o2trainClass=np.vstack((oClass_marta[:pM]))
@@ -1165,12 +1165,35 @@ o3trainClass=np.vstack((oClass_marta[:pM],oClass_dns[:pD]))
 
 #centroids_distances(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 #centroids_distances_with_pca(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+
+#----------------------------------------------------------Testing Bruno vs Marta to check if no Anomalies are found----------------------------------------------
+name_excel="marta_bruno"
+
+# oClass_bruno=np.ones((len(features_bruno),1))*2
+
+# #i2train=np.vstack((trainFeatures_marta))
+# o2trainClass=np.vstack((oClass_marta[:pM]))
+# i3Ctrain=np.vstack((trainFeatures_marta,trainFeatures_bruno))
+# #i3Atest=np.vstack((testFeatures_marta,testFeatures_dns))
+
+# o3testClass=np.vstack((oClass_marta[pM:],oClass_bruno[pB:]))
+# o3trainClass=np.vstack((oClass_marta[:pM],oClass_bruno[:pB]))
+
+
+#centroids_distances(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+#centroids_distances_with_pca(trainFeatures_marta, o2trainClass, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 # one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-#one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-# svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+# one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+# svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_bruno, testFeatures_bruno, o3trainClass, o3testClass,name_excel)
+# svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_bruno, testFeatures_bruno, o3trainClass, o3testClass,name_excel)
+# neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_bruno, testFeatures_bruno, o3trainClass, o3testClass,name_excel)
+# neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_bruno, testFeatures_bruno, o3trainClass, o3testClass,name_excel)
 
 
 # # # Wait for user input before exiting
