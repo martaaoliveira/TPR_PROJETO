@@ -14,7 +14,7 @@ def find_best_f1_score(df):
     return df.iloc[best_f1_index]
 
 def main():
-    directory_path = './resultados'
+    directory_path = './resultados_script_smart'
     excel_files = get_excel_files(directory_path)
 
     best_f1_scores = []

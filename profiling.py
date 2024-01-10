@@ -193,7 +193,7 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
 
     # Save the DataFrame to an Excel file
     # df.to_excel(name_excel+'resultados_OneClassSVM.xlsx', index=False)
-    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_OneClassSVM.xlsx'), index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_OneClassSVM.xlsx'), index=False)
 
     # Find the index of the row with the best F1 score
     best_f1_index = df['F1 Score'].idxmax()
@@ -338,7 +338,7 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
 
     # DataFrame to an Excel file
     # df.to_excel(name_excel+'resultados_OneClassSVM_pca.xlsx', index=False)
-    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_OneClassSVM_pca.xlsx'), index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_OneClassSVM_pca.xlsx'), index=False)
 
 
     # Find the index of the row with the best F1 score
@@ -473,7 +473,7 @@ def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_
     df = pd.DataFrame(results)
 
     # df.to_excel(name_excel+'resultados_SVM.xlsx', index=False)
-    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_SVM.xlsx'), index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_SVM.xlsx'), index=False)
 
     best_f1_index = df['F1 Score'].idxmax()
 
@@ -619,7 +619,7 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
     df = pd.concat([pd.DataFrame(res) for res in all_results], ignore_index=True)
 
     # df.to_excel(name_excel+'resultados_SVM_PCA.xlsx', index=False)
-    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_SVM_PCA.xlsx'), index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_SVM_PCA.xlsx'), index=False)
 
 
     # Find the index of the row with the best F1 score
@@ -699,7 +699,7 @@ def neural_network_classification(trainFeatures_normal, testFeatures_normal, tra
 
     df = pd.DataFrame(results)
     # df.to_excel(name_excel+'resultados_redes_neurais.xlsx', index=False)
-    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_redes_neurais.xlsx'), index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_redes_neurais.xlsx'), index=False)
 
 
     plt.figure(figsize=(8, 6))
@@ -780,7 +780,7 @@ def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_no
 
     df = pd.DataFrame(results)
 
-    df.to_excel(os.path.join('resultados', f'{name_excel}_resultados_redes_neurais_pca.xlsx'), index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_redes_neurais_pca.xlsx'), index=False)
 
     best_f1_index = df['F1 Score'].idxmax()
 
