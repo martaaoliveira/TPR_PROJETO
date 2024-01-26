@@ -638,161 +638,44 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
     plt.title(f'Best Confusion Matrix based on SVM with kernel {best_kernel} and with pca {best_number_components} ')
     plt.show()
 
-################################### -- 12 Classification based on Neural Networks without pca -- #########################################################################################################
-def neural_network_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel):
-    i3train = np.vstack((trainFeatures_normal, trainFeatures_dns))
+
+from sklearn.ensemble import IsolationForest
+from sklearn.inspection import DecisionBoundaryDisplay
+
+
+
+def isolation_forest_without_pca(train_features, testFeatures_normal, testFeatures_dns,o3testClass):
+
     i3Ctest = np.vstack((testFeatures_normal, testFeatures_dns))
+    i3train = np.vstack((train_features))
+    
+    # Create an Isolation Forest instance
+    isolation_forest = IsolationForest(contamination=0.1)
 
-    scaler = MaxAbsScaler().fit(i3train)
-    i3trainN = scaler.transform(i3train)
-    i3CtestN = scaler.transform(i3Ctest)
+    # Fit the model on the training features
+    isolation_forest.fit(i3train)
 
-    alpha = 1
-    max_iter = 100000
-    clf = MLPClassifier(solver='lbfgs', alpha=alpha, hidden_layer_sizes=(20,), max_iter=max_iter)
-    clf.fit(i3trainN, o3trainClass)
-    LT = clf.predict(i3CtestN)
-
-    tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
+    # Predict anomalies on the test features
+    anomaly_predictions = isolation_forest.predict(i3Ctest)
+    
+    #Convert predictions to binary (1 for normal, 0 for anomaly)
+    binary_predictions = (anomaly_predictions == 0).astype(int)
+    print(binary_predictions)
+    nObsTest,nFea = i3Ctest.shape
     actual_labels = []
-    predicted_labels = []
-    results = []
-    nObsTest, nFea = i3CtestN.shape
 
     for i in range(nObsTest):
         actual_labels.append(o3testClass[i][0])
-        if LT[i] == o3testClass[i][0]:
-                if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
-                    predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
-                    tp_nn += 1
-                else:
-                    predicted_labels.append(0.0)  # Predicted as Normal
-                    tn_nn += 1
-        else:
-            if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
-                predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
-                fp_nn += 1
-            else:
-                predicted_labels.append(0.0)  # Predicted as Normal
-                fn_nn += 1
-
-
-    accuracy_nn = ((tp_nn + tn_nn) / (tp_nn + tn_nn + fp_nn + fn_nn)) * 100
-    precision_nn = (tp_nn / (tp_nn + fp_nn)) * 100 if (tp_nn + fp_nn) != 0 else 0
-    recall_nn = (tp_nn / (tp_nn + fn_nn)) * 100 if (tp_nn + fn_nn) != 0 else 0
-    f1_score_nn = (2 * (precision_nn * recall_nn)) / (precision_nn + recall_nn) if (
-            precision_nn + recall_nn) != 0 else 0
-    
-    confusionMatrix = confusion_matrix(actual_labels, predicted_labels)
-
-    results.append({
-        'TP': tp_nn,
-        'FP': fp_nn,
-        'TN': tn_nn,
-        'FN': fn_nn,
-        'Recall': recall_nn,
-        'Accuracy': accuracy_nn,
-        'Precision': precision_nn,
-        'F1 Score': f1_score_nn,
-        'Confusion Matrix': confusionMatrix,
-    })
-
-    df = pd.DataFrame(results)
-    # df.to_excel(name_excel+'resultados_redes_neurais.xlsx', index=False)
-    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_redes_neurais.xlsx'), index=False)
-
+        
+    # Calculate the confusion matrix
+    confusion_matrix_result = confusion_matrix(actual_labels, binary_predictions)
 
     plt.figure(figsize=(8, 6))
-    sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
+    sns.heatmap(confusion_matrix_result, annot=True, cmap='Blues', fmt='d',
                 xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix based on Neural Networks without PCA')
-    plt.show()
-
-
-################################### -- 12 Classification based on Neural Networks with pca -- ##################################################
-def neural_network_classification_with_pca(trainFeatures_normal, testFeatures_normal, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel):
-    components_to_test = [1, 5, 10, 15, 20, 30, 40]
-
-    results = []
-    i3train = np.vstack((trainFeatures_normal, trainFeatures_dns))
-    i3Ctest = np.vstack((testFeatures_normal, testFeatures_dns))
-
-    for n_components in components_to_test:
-        pca = PCA(n_components=n_components)
-        i3train_pca = pca.fit_transform(i3train)
-        i3Ctest_pca = pca.transform(i3Ctest)
-
-        scaler = MaxAbsScaler().fit(i3train_pca)
-        i3trainN_pca = scaler.transform(i3train_pca)
-        i3CtestN_pca = scaler.transform(i3Ctest_pca)
-
-        alpha = 1
-        max_iter = 100000
-        clf = MLPClassifier(solver='lbfgs', alpha=alpha, hidden_layer_sizes=(20,), max_iter=max_iter)
-        clf.fit(i3trainN_pca, o3trainClass)
-        LT = clf.predict(i3CtestN_pca)
-
-        tp_nn, fn_nn, tn_nn, fp_nn = 0, 0, 0, 0
-        actual_labels = []
-        predicted_labels = []
-
-        nObsTest, nFea = i3CtestN_pca.shape
-
-        for i in range(nObsTest):
-            actual_labels.append(o3testClass[i][0])
-            if LT[i] == o3testClass[i][0]:
-                if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
-                    predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
-                    tp_nn += 1
-                else:
-                    predicted_labels.append(0.0)  # Predicted as Normal
-                    tn_nn += 1
-            else:
-                if LT[i] == 2.0:  # Comparando com o valor numérico correspondente à classe 'DNS'
-                    predicted_labels.append(2.0)  # Predicted as DNS (anomaly)
-                    fp_nn += 1
-                else:
-                    predicted_labels.append(0.0)  # Predicted as Normal
-                    fn_nn += 1
-
-        accuracy_nn = ((tp_nn + tn_nn) / (tp_nn + tn_nn + fp_nn + fn_nn)) * 100
-        precision_nn = (tp_nn / (tp_nn + fp_nn)) * 100 if (tp_nn + fp_nn) != 0 else 0
-        recall_nn = (tp_nn / (tp_nn + fn_nn)) * 100 if (tp_nn + fn_nn) != 0 else 0
-        f1_score_nn = (2 * (precision_nn * recall_nn)) / (precision_nn + recall_nn) if (
-                precision_nn + recall_nn) != 0 else 0
-
-        confusionMatrix = confusion_matrix(actual_labels, predicted_labels)
-
-        results.append({
-            'Components': n_components,
-            'TP': tp_nn,
-            'FP': fp_nn,
-            'TN': tn_nn,
-            'FN': fn_nn,
-            'Recall': recall_nn,
-            'Accuracy': accuracy_nn,
-            'Precision': precision_nn,
-            'F1 Score': f1_score_nn,
-            'Confusion Matrix': confusionMatrix,
-        })
-
-    df = pd.DataFrame(results)
-
-    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_redes_neurais_pca.xlsx'), index=False)
-
-    best_f1_index = df['F1 Score'].idxmax()
-
-    best_number_components=df.loc[best_f1_index,'Components']
-
-
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(confusionMatrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix based on Neural Networks with pca {best_number_components}')
+    plt.title(f' Confusion Matrix Isolation Forest')
     plt.show()
 
 ########### Main Code #############
@@ -959,14 +842,13 @@ testFeatures_dns=features_dns[pD:,:]
 name_excel="bruno_dumb"
 
 o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
-o3trainClass=np.vstack((oClass_bruno[:pB],oClass_dns[:pD]))
+o3trainClass=np.vstack((oClass_bruno[:pB]))
 
 # one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 # svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-neural_network_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
+isolation_forest_without_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass)
 
 #----------------------------------------------------------Testing Marta Behaviour----------------------------------------------
 name_excel="marta_dumb"
