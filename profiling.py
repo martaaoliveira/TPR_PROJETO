@@ -641,34 +641,62 @@ def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, train
 
 from sklearn.ensemble import IsolationForest
 from sklearn.inspection import DecisionBoundaryDisplay
+from sklearn.metrics import precision_score, recall_score, f1_score
 
-
-
+#########################################################Isolation_forest without pca###################################################
 def isolation_forest_without_pca(train_features, testFeatures_normal, testFeatures_dns,o3testClass):
 
     i3Ctest = np.vstack((testFeatures_normal, testFeatures_dns))
     i3train = np.vstack((train_features))
     
     # Create an Isolation Forest instance
-    isolation_forest = IsolationForest(contamination=0.1)
+    isolation_forest = IsolationForest(contamination=0.2)
 
     # Fit the model on the training features
     isolation_forest.fit(i3train)
 
     # Predict anomalies on the test features
-    anomaly_predictions = isolation_forest.predict(i3Ctest)
-    
-    #Convert predictions to binary (1 for normal, 0 for anomaly)
-    binary_predictions = (anomaly_predictions == 0).astype(int)
-    print(binary_predictions)
+    anomaly_predictions = isolation_forest.predict(i3Ctest) #-1 anomalia, 1 comportamento normal
+
+    # Convert predictions to binary (0 for normal, 2 for anomaly)
+    binary_predictions = (anomaly_predictions == -1).astype(int) * 2
+
     nObsTest,nFea = i3Ctest.shape
     actual_labels = []
 
     for i in range(nObsTest):
         actual_labels.append(o3testClass[i][0])
-        
+    results = []
     # Calculate the confusion matrix
     confusion_matrix_result = confusion_matrix(actual_labels, binary_predictions)
+    # Calculate precision, recall, and F1 score
+    TN = confusion_matrix_result[0, 0]
+    FP = confusion_matrix_result[0, 1]
+    FN = confusion_matrix_result[1, 0]
+    TP = confusion_matrix_result[1, 1]
+    precision = precision_score(actual_labels, binary_predictions, pos_label=2)
+    recall = recall_score(actual_labels, binary_predictions, pos_label=2)
+    f1 = f1_score(actual_labels, binary_predictions, pos_label=2)
+    #print(f1)
+
+    results = {
+            'TP': [TP],
+            'FP': [FP],
+            'TN': [TN],
+            'FN': [FN],
+            'Precision': [precision],
+            'Recall': [recall],
+            'F1 Score': [f1],
+            'ConfusionMatrix': [
+                confusion_matrix_result
+            ]
+        }    
+        
+
+    df = pd.DataFrame(results)
+
+    # df.to_excel(name_excel+'resultados_SVM_PCA.xlsx', index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_isolation_forest.xlsx'), index=False)
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(confusion_matrix_result, annot=True, cmap='Blues', fmt='d',

@@ -9,28 +9,42 @@ def get_excel_files(directory):
             excel_files.append(file_path)
     return excel_files
 
-def find_best_f1_score(df):
-    best_f1_index = df['F1 Score'].idxmax()
-    return df.iloc[best_f1_index]
+
+
+def get_metrics(df):
+    TN = df['TN'].sum()
+    FP = df['FP'].sum()
+    FN = df['FN'].sum()
+    TP = df['TP'].sum()
+    return TN, FP, FN, TP
 
 def main():
-    directory_path = './resultados_script_smart'
+    directory_path = './resultados_script_dumb'
     excel_files = get_excel_files(directory_path)
 
-    best_f1_scores = []
+    all_metrics = []
 
     for file_path in excel_files:
         df = pd.read_excel(file_path)
-        best_result = find_best_f1_score(df)
-        best_f1_scores.append(best_result['F1 Score'])
+        TN, FP, FN, TP = get_metrics(df)
+        all_metrics.append({'TN': TN, 'FP': FP, 'FN': FN, 'TP': TP})
 
-    mean_f1_score = sum(best_f1_scores) / len(best_f1_scores)
-    print(f"Mean F1 Score: {mean_f1_score}")
+    print(all_metrics)
 
-    if mean_f1_score > 0.5:
-        print("The mean F1 Score is above 50%. Possible attack detected!")
+    total_TN = sum(metric['TN'] for metric in all_metrics)
+    total_FP = sum(metric['FP'] for metric in all_metrics)
+    total_FN = sum(metric['FN'] for metric in all_metrics)
+    total_TP = sum(metric['TP'] for metric in all_metrics)
+
+    total_metrics= total_TN+ total_FP+total_FN+total_TP
+    #print(total_metrics)
+    pred_final = (total_metrics)/len(excel_files)
+    #print(pred_final)
+    # Check if more than half of the algorithms indicate a True Positive
+    if pred_final >total_metrics/2:
+        print("More than half of the algorithms indicate a True Positive. Possible attack detected!")
     else:
-        print("The mean F1 Score is not above 50%. No attack detected.")
+        print("No attack detected.")
 
 if __name__ == "__main__":
     main()
