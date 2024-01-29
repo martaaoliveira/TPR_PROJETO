@@ -356,287 +356,6 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
     plt.title(f'Best Confusion Matrix One Class SVM with pca: {best_number_components} and Kernel {best_kernel}')
     plt.show()
 
-################################################################## -- 10 Classification based on Support Vector Machines without PCA -- #####################################################################################
-def svm_classification(trainFeatures_normal, testFeatures_normal, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel):
-    i3train = np.vstack((trainFeatures_normal, trainFeatures_dns))
-    i3Ctest = np.vstack((testFeatures_normal, testFeatures_dns))
-
-    svc = svm.SVC(kernel='linear').fit(i3train, o3trainClass)
-    rbf_svc = svm.SVC(kernel='rbf').fit(i3train, o3trainClass)
-    poly_svc = svm.SVC(kernel='poly', degree=2).fit(i3train, o3trainClass)
-
-    L1 = svc.predict(i3Ctest)
-    L2 = rbf_svc.predict(i3Ctest)
-    L3 = poly_svc.predict(i3Ctest)
-
-    tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
-    actual_labels_linear = []
-    predicted_labels_linear = []
-
-    tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-    actual_labels_rbf = []
-    predicted_labels_rbf = []
-
-    tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
-    actual_labels_poly = []
-    predicted_labels_poly = []
-
-    nObsTest, nFea = i3Ctest.shape
-
-    AnomResults = {2.0: "Anomaly", 0: "OK"}  
-
-    for i in range(nObsTest):
-        actual_labels_linear.append(o3testClass[i][0])
-        actual_labels_rbf.append(o3testClass[i][0])
-        actual_labels_poly.append(o3testClass[i][0])
-
-        # Linear
-        if AnomResults[L1[i]] == "Anomaly":
-            predicted_labels_linear.append(2.0)
-            if o3testClass[i][0] == 2:
-                tp_linear += 1
-            else:
-                fp_linear += 1
-        else:
-            predicted_labels_linear.append(0.0)
-            if o3testClass[i][0] == 2:
-                fn_linear += 1
-            else:
-                tn_linear += 1
-
-        # RBF
-        if AnomResults[L2[i]] == "Anomaly":
-            predicted_labels_rbf.append(2.0)
-            if o3testClass[i][0] == 2:
-                tp_rbf += 1
-            else:
-                fp_rbf += 1
-        else:
-            predicted_labels_rbf.append(0.0)
-            if o3testClass[i][0] == 2:
-                fn_rbf += 1
-            else:
-                tn_rbf += 1
-
-
-        # Poly
-        if AnomResults[L3[i]] == "Anomaly":
-            predicted_labels_poly.append(2.0)
-            if o3testClass[i][0] == 2:
-                tp_poly += 1
-            else:
-                fp_poly += 1
-        else:
-            predicted_labels_poly.append(0.0)
-            if o3testClass[i][0] == 2:
-                fn_poly += 1
-            else:
-                tn_poly += 1
-
-    accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
-    precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
-
-    accuracy_rbf = ((tp_rbf + tn_rbf) / nObsTest) * 100
-    precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
-
-    accuracy_poly = ((tp_poly + tn_poly) / nObsTest) * 100
-    precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
-
-    recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
-    recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
-    recall_poly = (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0
-
-    f1_score_linear = (2 * (precision_linear * recall_linear) / (precision_linear + recall_linear))  if (
-            precision_linear + recall_linear) != 0 else 0
-    f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf))  if (
-            precision_rbf + recall_rbf) != 0 else 0
-    f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_poly))  if (
-            precision_poly + recall_poly) != 0 else 0
-
-    results = {
-        'Method': ['Linear', 'RBF', 'Poly'],
-        'TP': [tp_linear, tp_rbf, tp_poly],
-        'FP': [fp_linear, fp_rbf, fp_poly],
-        'TN': [tn_linear, tn_rbf, tn_poly],
-        'FN': [fn_linear, fn_rbf, fn_poly],
-        'Accuracy': [accuracy_linear, accuracy_rbf, accuracy_poly],
-        'Precision': [precision_linear, precision_rbf, precision_poly],
-        'Recall': [recall_linear, recall_rbf, recall_poly],
-        'F1 Score': [f1_score_linear, f1_score_rbf, f1_score_poly],
-        'ConfusionMatrix': [
-            confusion_matrix(actual_labels_linear, predicted_labels_linear),
-            confusion_matrix(actual_labels_rbf, predicted_labels_rbf),
-            confusion_matrix(actual_labels_poly, predicted_labels_poly)
-        ]
-    }
-
-    df = pd.DataFrame(results)
-
-    # df.to_excel(name_excel+'resultados_SVM.xlsx', index=False)
-    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_SVM.xlsx'), index=False)
-
-    best_f1_index = df['F1 Score'].idxmax()
-
-    best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
-    
-    best_kernel = df.loc[best_f1_index,'Method']
-
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix based on SVM with kernel {best_kernel}')
-    plt.show()
-
-######################################### -- 10.2 Classification based on Support Vector Machines with PCA -- #####################################################################################
-def svm_classification_with_pca(trainFeatures_normal, testFeatures_normal, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel):
-    i3train = np.vstack((trainFeatures_normal, trainFeatures_dns))
-    i3Ctest = np.vstack((testFeatures_normal, testFeatures_dns))
-
-    # Define a range of components to test
-    components_to_test = [5, 10, 15, 20, 30, 40]
-    results = []
-    all_results = []
-
-    for n_components in components_to_test:
-        # Initialize PCA and fit-transform the data
-        pca = PCA(n_components=n_components)
-        i3train_pca = pca.fit_transform(i3train)
-        i3Ctest_pca = pca.transform(i3Ctest)
-        svc = svm.SVC(kernel='linear').fit(i3train_pca, o3trainClass)
-        rbf_svc = svm.SVC(kernel='rbf').fit(i3train_pca, o3trainClass)
-        poly_svc = svm.SVC(kernel='poly', degree=2).fit(i3train_pca, o3trainClass)
-
-        L1 = svc.predict(i3Ctest_pca)
-        L2 = rbf_svc.predict(i3Ctest_pca)
-        L3 = poly_svc.predict(i3Ctest_pca)
-
-        tp_linear, fn_linear, tn_linear, fp_linear = 0, 0, 0, 0
-        actual_labels_linear = []
-        predicted_labels_linear = []
-
-        tp_rbf, fn_rbf, tn_rbf, fp_rbf = 0, 0, 0, 0
-        actual_labels_rbf = []
-        predicted_labels_rbf = []
-
-        tp_poly, fn_poly, tn_poly, fp_poly = 0, 0, 0, 0
-        actual_labels_poly = []
-        predicted_labels_poly = []
-
-        nObsTest, nFea = i3Ctest.shape
-
-        AnomResults = {2.0: "Anomaly", 0: "OK", 1.0:"OK"}  # Bruno is 0 and DNS is 2 and Marta "1.0"
-
-        for i in range(nObsTest):
-            # print('Obs: {:2} ({:<8}): Kernel Linear->{:<10} | Kernel RBF->{:<10} | Kernel Poly->{:<10}'.format(i, Classes[o3testClass[i][0]],Classes[L1[i]],Classes[L2[i]],Classes[L3[i]]))
-            actual_labels_linear.append(o3testClass[i][0])
-            actual_labels_rbf.append(o3testClass[i][0])
-            actual_labels_poly.append(o3testClass[i][0])
-
-            # Linear
-            if AnomResults[L1[i]] == "Anomaly":
-                predicted_labels_linear.append(2.0)
-                if o3testClass[i][0] == 2:
-                    tp_linear += 1
-                else:
-                    fp_linear += 1
-            else:
-                predicted_labels_linear.append(0.0)
-                if o3testClass[i][0] == 2:
-                    fn_linear += 1
-                else:
-                    tn_linear += 1
-
-            # RBF
-            if AnomResults[L2[i]] == "Anomaly":
-                predicted_labels_rbf.append(2.0)
-                if o3testClass[i][0] == 2:
-                    tp_rbf += 1
-                else:
-                    fp_rbf += 1
-            else:
-                predicted_labels_rbf.append(0.0)
-                if o3testClass[i][0] == 2:
-                    fn_rbf += 1
-                else:
-                    tn_rbf += 1
-
-
-            # Poly
-            if AnomResults[L3[i]] == "Anomaly":
-                predicted_labels_poly.append(2.0)
-                if o3testClass[i][0] == 2:
-                    tp_poly += 1
-                else:
-                    fp_poly += 1
-            else:
-                predicted_labels_poly.append(0.0)
-                if o3testClass[i][0] == 2:
-                    fn_poly += 1
-                else:
-                    tn_poly += 1
-
-        accuracy_linear = ((tp_linear + tn_linear) / nObsTest) * 100
-        precision_linear = (tp_linear / (tp_linear + fp_linear)) * 100 if tp_linear + fp_linear > 0 else 0
-
-        accuracy_rbf = ((tp_rbf + tn_rbf) / nObsTest) * 100
-        precision_rbf = (tp_rbf / (tp_rbf + fp_rbf)) * 100 if tp_rbf + fp_rbf > 0 else 0
-
-        accuracy_poly = ((tp_poly + tn_poly) / nObsTest) * 100
-        precision_poly = (tp_poly / (tp_poly + fp_poly)) * 100 if tp_poly + fp_poly > 0 else 0
-
-        recall_linear = (tp_linear / (tp_linear + fn_linear)) * 100 if tp_linear + fn_linear > 0 else 0
-        recall_rbf = (tp_rbf / (tp_rbf + fn_rbf)) * 100 if tp_rbf + fn_rbf > 0 else 0
-        recall_poly = (tp_poly / (tp_poly + fn_poly)) * 100 if tp_poly + fn_poly > 0 else 0
-
-        f1_score_linear = (2 * (precision_linear * recall_linear) / (
-                precision_linear + recall_linear))  if (precision_linear + recall_linear) != 0 else 0
-        f1_score_rbf = (2 * (precision_rbf * recall_rbf) / (precision_rbf + recall_rbf))  if (
-                precision_rbf + recall_rbf) != 0 else 0
-        f1_score_poly = (2 * (precision_poly * recall_poly) / (precision_poly + recall_poly))  if (
-                precision_poly + recall_poly) != 0 else 0
-
-        results = {
-            'Method': ['Linear', 'RBF', 'Poly'],
-            'Number components': n_components,
-            'TP': [tp_linear, tp_rbf, tp_poly],
-            'FP': [fp_linear, fp_rbf, fp_poly],
-            'TN': [tn_linear, tn_rbf, tn_poly],
-            'FN': [fn_linear, fn_rbf, fn_poly],
-            'Accuracy': [accuracy_linear, accuracy_rbf, accuracy_poly],
-            'Precision': [precision_linear, precision_rbf, precision_poly],
-            'Recall': [recall_linear, recall_rbf, recall_poly],
-            'F1 Score': [f1_score_linear, f1_score_rbf, f1_score_poly],
-            'ConfusionMatrix': [
-                confusion_matrix(actual_labels_linear, predicted_labels_linear),
-                confusion_matrix(actual_labels_rbf, predicted_labels_rbf),
-                confusion_matrix(actual_labels_poly, predicted_labels_poly)
-            ]
-        }
-        all_results.append(results)
-
-    df = pd.concat([pd.DataFrame(res) for res in all_results], ignore_index=True)
-
-    # df.to_excel(name_excel+'resultados_SVM_PCA.xlsx', index=False)
-    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_SVM_PCA.xlsx'), index=False)
-
-
-    # Find the index of the row with the best F1 score
-    best_f1_index = df['F1 Score'].idxmax()
-
-    best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
-    best_kernel = df.loc[best_f1_index,'Method']
-    best_number_components=df.loc[best_f1_index,'Number components']
-
-    # Plot the best confusion matrix if it exists
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
-                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
-    plt.xlabel('Predicted')
-    plt.ylabel('Actual')
-    plt.title(f'Best Confusion Matrix based on SVM with kernel {best_kernel} and with pca {best_number_components} ')
-    plt.show()
 
 
 from sklearn.ensemble import IsolationForest
@@ -705,6 +424,178 @@ def isolation_forest_without_pca(train_features, testFeatures_normal, testFeatur
     plt.ylabel('Actual')
     plt.title(f' Confusion Matrix Isolation Forest')
     plt.show()
+
+
+
+#########################################################Isolation_forest with pca###################################################
+
+def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_dns, o3testClass, name_excel):
+    i3Ctest = np.vstack((testFeatures_normal, testFeatures_dns))
+    i3train = np.vstack((train_features))
+
+    all_results = []
+    results=[]
+
+    components_to_test = [5, 10, 15, 20, 25]
+
+    for n_components in components_to_test:
+        # pca_features = apply_pca(i3train, i3Ctest, n_components)
+        actual_labels=[]
+        binary_predictions=[]
+        confusion_matrix_result=[]
+
+        pca = PCA(n_components=n_components)
+        i3train_pca = pca.fit_transform(i3train)
+        i3Ctest_pca = pca.transform(i3Ctest)
+        nObsTest, nFea = i3Ctest_pca.shape
+
+        # Create an Isolation Forest instance
+        isolation_forest = IsolationForest(contamination=0.2)
+
+        # Fit the model on the training features
+        isolation_forest.fit(i3train_pca)
+
+        # Predict anomalies on the test features
+        anomaly_predictions = isolation_forest.predict(i3Ctest_pca)
+
+        for i in range(nObsTest):
+            actual_labels.append(o3testClass[i][0])
+            if(anomaly_predictions[i]==-1):
+                binary_predictions.append(2.0)
+            else:
+                binary_predictions.append(0.0)
+
+        # Calculate the confusion matrix
+        confusion_matrix_result = confusion_matrix(actual_labels, binary_predictions)
+        TN = confusion_matrix_result[0, 0]
+        FP = confusion_matrix_result[0, 1]
+        FN = confusion_matrix_result[1, 0]
+        TP = confusion_matrix_result[1, 1]
+        # Calculate precision, recall, and F1 score
+        precision = precision_score(actual_labels, binary_predictions, pos_label=2)
+        recall = recall_score(actual_labels, binary_predictions, pos_label=2)
+        f1 = f1_score(actual_labels, binary_predictions, pos_label=2)
+
+        # Store results in a dictionary
+        results = {
+            'TP': [TP],
+            'FP': [FP],
+            'TN': [TN],
+            'FN': [FN],
+            'Number components': n_components,
+            'Precision': precision,
+            'Recall': recall,
+            'F1 Score': f1,
+            'ConfusionMatrix': [confusion_matrix_result]
+        }
+
+        all_results.append(results)
+
+    df = pd.concat([pd.DataFrame(res) for res in all_results], ignore_index=True)
+
+
+    # df.to_excel(name_excel+'resultados_SVM_PCA.xlsx', index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_isolation_forest_pca.xlsx'), index=False)
+
+    # Find the index of the row with the best F1 score
+    best_f1_index = df['F1 Score'].idxmax()
+    best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
+    best_number_components=df.loc[best_f1_index,'Number components']
+        
+    # Plot the confusion matrix
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
+                    xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f' Confusion Matrix Isolation Forest with PCA: {best_number_components}')
+    plt.show()
+
+
+from sklearn.ensemble import RandomForestClassifier
+
+
+def random_forest_classification_without_pca(train_features, test_features_normal, test_features_dns, o3_train_class, o3_test_class, name_excel):
+    i3_train = np.vstack((train_features))
+    i3_test = np.vstack((test_features_normal, test_features_dns))
+
+    # Create a Random Forest Classifier
+    random_forest = RandomForestClassifier(n_estimators=30, random_state=40)
+
+    # Fit the model on the training features
+    random_forest.fit(i3_train, o3_train_class)
+
+    # Predict classes on the test features
+    predictions = random_forest.predict(i3_test)
+
+    
+    # Evaluate the performance
+    confusion_matrix_result = confusion_matrix(o3_test_class, predictions)
+    precision = precision_score(o3_test_class, predictions, pos_label=2)
+    recall = recall_score(o3_test_class, predictions, pos_label=2)
+    f1 = f1_score(o3_test_class, predictions, pos_label=2)
+
+    results = {
+        'TP': confusion_matrix_result[1, 1],
+        'FP': confusion_matrix_result[0, 1],
+        'TN': confusion_matrix_result[0, 0],
+        'FN': confusion_matrix_result[1, 0],
+        'Precision': precision,
+        'Recall': recall,
+        'F1 Score': f1,
+        'ConfusionMatrix': [confusion_matrix_result]  
+    }
+
+    df = pd.DataFrame(results)
+
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_random_forest.xlsx'), index=False)
+
+    # Plot the confusion matrix
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(confusion_matrix_result, annot=True, cmap='Blues', fmt='d',
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title('Confusion Matrix Random Forest')
+    plt.show()
+
+
+from sklearn.linear_model import LinearRegression
+
+def linear_regression_model(train_features, test_features_normal, test_features_dns, o3_train_class, o3_test_class, name_excel):
+    i3_train = np.vstack((train_features))
+    i3_test = np.vstack((test_features_dns))
+
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = i3_train, i3_test, o3_train_class, o3_test_class
+
+    # Create a linear regression model
+    model = LinearRegression()
+
+    # Train the model
+    model.fit(X_train, y_train)
+
+    # Make predictions on the test set
+    predictions = model.predict(X_test)
+    print(predictions)
+
+    binary_predictions = np.where(predictions > 1, 2.0, 0.0)
+
+
+    
+    # Calculate confusion matrix and F1 score
+    confusion_matrix_result = confusion_matrix(o3_test_class, binary_predictions)
+    f1 = f1_score(o3_test_class, binary_predictions, pos_label=2)
+    print(f'Confusion Matrix:\n{confusion_matrix_result}')
+    print(f'F1 Score: {f1}')
+
+
+
+    # You can also save the plot if needed
+    # plt.savefig(os.path.join('resultados_script_dumb', f'{name_excel}_linear_regression_plot.png'))
+
+    # Return the trained model for potential future use
+    return model
 
 ########### Main Code #############
 
@@ -869,14 +760,18 @@ testFeatures_dns=features_dns[pD:,:]
 #----------------------------------------------------------Testing Bruno Behaviour----------------------------------------------
 name_excel="bruno_dumb"
 
-o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
+o3testClass=np.vstack(oClass_dns[pB:])
+#o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
 o3trainClass=np.vstack((oClass_bruno[:pB]))
 
-# one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-# one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-# svm_classification(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# svm_classification_with_pca(trainFeatures_bruno, testFeatures_bruno, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-isolation_forest_without_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass)
+#one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+#one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+#isolation_forest_without_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass)
+#isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+
+#nao estao a funcionar bem
+#random_forest_classification_without_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3trainClass, o3testClass, name_excel)
+linear_regression_model(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3trainClass, o3testClass, name_excel)
 
 #----------------------------------------------------------Testing Marta Behaviour----------------------------------------------
 name_excel="marta_dumb"
@@ -886,8 +781,6 @@ name_excel="marta_dumb"
 
 # one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 # one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-# svm_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
-# svm_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 # neural_network_classification(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 # neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
