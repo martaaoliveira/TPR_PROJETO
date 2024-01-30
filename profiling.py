@@ -761,19 +761,20 @@ def gmm_classification(train_features, test_features_normal, test_features_dns, 
     return anomaly_predictions
 
 
-def gmm_classification_with_pca(train_features, test_features_normal, test_features_dns, o3_test_class, name_excel, components_to_test):
+def gmm_classification_with_pca(train_features, test_features_normal, test_features_dns, o3_test_class, name_excel):
     train_data = np.vstack((train_features))
     test_data = np.vstack((test_features_normal, test_features_dns))
     nObsTest, nFea = test_data.shape
+    components_to_test = [5, 10, 15, 20, 25]
+    best_f1_score = 0
+    best_pca_component = 0
+    best_confusion_matrix = None
     actual_labels = []
     predictions = []
 
-    best_f1_score = 0
-    best_pca_component = 0
-
     for n_components in components_to_test:
         # Apply PCA
-        pca = PCA(n_components=n_components, random_state=42)
+        pca = PCA(n_components=n_components)
         train_data_pca = pca.fit_transform(train_data)
         test_data_pca = pca.transform(test_data)
 
@@ -790,31 +791,39 @@ def gmm_classification_with_pca(train_features, test_features_normal, test_featu
 
         # Predict anomalies based on the threshold
         anomaly_predictions = (anomaly_scores > threshold).astype(int)
+        for i in range(nObsTest):
+            actual_labels.append(o3_test_class[i][0])
+            if(anomaly_predictions[i]==1):
+                predictions.append(2.0)
+            else:
+                predictions.append(0.0)
 
         # Evaluate the performance
-        confusion_matrix_result = confusion_matrix(o3_test_class, anomaly_predictions)
-        precision = precision_score(o3_test_class, anomaly_predictions, pos_label=2, average='macro')
-        recall = recall_score(o3_test_class, anomaly_predictions, pos_label=2, average='macro')
-        f1 = f1_score(o3_test_class, anomaly_predictions, pos_label=2, average='macro')
-        
+        confusion_matrix_result = confusion_matrix(actual_labels, predictions)
+        precision = precision_score(actual_labels, predictions, pos_label=2, average='macro')
+        recall = recall_score(o3_test_class, predictions, pos_label=2, average='macro')
+        f1 = f1_score(actual_labels, predictions, pos_label=2, average='macro')
+
         if f1 > best_f1_score:
             best_f1_score = f1
             best_pca_component = n_components
             best_confusion_matrix = confusion_matrix_result
             best_labels = anomaly_predictions
-
-        anomaly_predictions = []
+            precision,recall=0
+            
+        predictions = []
+        actual_labels = []
 
     results = {
-        'TP': confusion_matrix_result[1, 1],
-        'FP': confusion_matrix_result[0, 1],
-        'TN': confusion_matrix_result[0, 0],
-        'FN': confusion_matrix_result[1, 0],
+        'TP': best_confusion_matrix[1, 1],
+        'FP': best_confusion_matrix[0, 1],
+        'TN': best_confusion_matrix[0, 0],
+        'FN': best_confusion_matrix[1, 0],
         'Precision': precision,
         'Recall': recall,
         'F1 Score': f1,
         'Lables': [best_labels],
-        'ConfusionMatrix': [confusion_matrix_result]
+        'ConfusionMatrix': [best_confusion_matrix]
     }
 
     df = pd.DataFrame(results)
@@ -1001,14 +1010,14 @@ name_excel="bruno_smart"
 o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns))
 o3trainClass=np.vstack((oClass_bruno[:pB]))
 
-labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+#labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # labels2 = one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 #labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)
 #labels4 = isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
 #labels5 = lof_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
 #labels6 = lof_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-labels7=gmm_classification=(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-labels8=gmm_classification_with_pca=(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+labels7=gmm_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+labels8=gmm_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
 # final_lables = [labels1, labels2, labels3, labels4, labels5, labels6]
 #final_lables = [labels1, labels3, labels4, labels5, labels6]
 
