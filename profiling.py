@@ -181,6 +181,7 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
         'Precision': [precision_linear, precision_rbf, precision_poly],
         'Recall': [recall_linear, recall_rbf, recall_poly],
         'F1 Score': [f1_score_linear, f1_score_rbf, f1_score_poly],
+        'Labels': [predicted_labels_linear, predicted_labels_rbf, predicted_labels_poly],
         'ConfusionMatrix': [
             confusion_matrix(actual_labels_linear, predicted_labels_linear),
             confusion_matrix(actual_labels_rbf, predicted_labels_rbf),
@@ -200,8 +201,8 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
     best_f1_value = df['F1 Score'].max()
 
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
-
     best_kernel = df.loc[best_f1_index,'Method']
+    best_labels = df.loc[best_f1_index,'Labels']
 
     # Plot the best confusion matrix if it exists
     plt.figure(figsize=(8, 6))
@@ -213,6 +214,8 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
     plt.show()
 
     print("F1 Score OSVM: ", best_f1_value)
+
+    return best_labels
 
 
 
@@ -328,6 +331,7 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
             'Precision': [precision_linear, precision_rbf, precision_poly],
             'Recall': [recall_linear, recall_rbf, recall_poly],
             'F1 Score': [f1_score_linear, f1_score_rbf, f1_score_poly],
+            'Labels': [predicted_labels_linear, predicted_labels_rbf, predicted_labels_poly],
             'ConfusionMatrix': [
                 confusion_matrix(actual_labels_linear, predicted_labels_linear),
                 confusion_matrix(actual_labels_rbf, predicted_labels_rbf),
@@ -348,10 +352,11 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
     best_f1_index = df['F1 Score'].idxmax()
     best_f1_value = df['F1 Score'].max()
 
-
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
     best_number_components=df.loc[best_f1_index,'Number components']
     best_kernel = df.loc[best_f1_index,'Method']
+    best_labels = df.loc[best_f1_index,'Labels']
+
     # Plot the best confusion matrix if it exists
     plt.figure(figsize=(8, 6))
     sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
@@ -363,6 +368,8 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
 
     print("F1 Score OSVM PCA: ", best_f1_value)
 
+    return best_labels
+
 
 
 from sklearn.ensemble import IsolationForest
@@ -370,7 +377,7 @@ from sklearn.inspection import DecisionBoundaryDisplay
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 #########################################################Isolation_forest without pca###################################################
-def isolation_forest_without_pca(train_features, testFeatures_normal, testFeatures_dns,o3testClass):
+def isolation_forest(train_features, testFeatures_normal, testFeatures_dns, o3testClass, name_excel):
 
     i3Ctest = np.vstack((testFeatures_normal, testFeatures_dns))
     i3train = np.vstack((train_features))
@@ -434,6 +441,8 @@ def isolation_forest_without_pca(train_features, testFeatures_normal, testFeatur
 
     print("F1 Score Isolation Forest: ", f1)
 
+    return binary_predictions
+
 
 
 #########################################################Isolation_forest with pca###################################################
@@ -495,6 +504,7 @@ def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_
             'Precision': precision,
             'Recall': recall,
             'F1 Score': f1,
+            'Labels': [binary_predictions],
             'ConfusionMatrix': [confusion_matrix_result]
         }
 
@@ -511,6 +521,7 @@ def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_
     best_f1_value = df['F1 Score'].max()
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
     best_number_components=df.loc[best_f1_index,'Number components']
+    best_labels=df.loc[best_f1_index,'Labels']
         
     # Plot the confusion matrix
     plt.figure(figsize=(8, 6))
@@ -523,12 +534,14 @@ def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_
 
     print("F1 Score Isolation Forest pca: ", best_f1_value)
 
+    return best_labels
+
 
 
 ##########################################################localOutflier without pca######################################
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import LocalOutlierFactor
-def lof_classification_without_pca(train_features, test_features_normal, test_features_dns, o3testClass, name_excel):
+def lof_classification(train_features, test_features_normal, test_features_dns, o3testClass, name_excel):
     
     i3_train = np.vstack((train_features))
     i3_test = np.vstack((test_features_normal, test_features_dns))
@@ -574,9 +587,9 @@ def lof_classification_without_pca(train_features, test_features_normal, test_fe
 
     df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_lof.xlsx'), index=False)
 
-    best_f1_value = df['F1 Score'].max()
+    # best_f1_value = df['F1 Score'].max()
 
-    print("F1 Score localOutflier: ", best_f1_value)
+    print("F1 Score localOutflier: ", f1)
 
     # Plot the confusion matrix
     plt.figure(figsize=(8, 6))
@@ -586,6 +599,8 @@ def lof_classification_without_pca(train_features, test_features_normal, test_fe
     plt.ylabel('Actual')
     plt.title('Confusion Matrix Local Outlier Factor with F1 score of {f1}')
     plt.show()
+
+    return predictions
 
 
 ##########################################################localOutflier with pca######################################
@@ -635,6 +650,7 @@ def lof_classification_with_pca(train_features, test_features_normal, test_featu
             best_f1_score = f1
             best_confusion_matrix = confusion_matrix_result
             best_pca_components = n_components
+            best_labels = predictions
 
         # Reset lists for the next iteration
         actual_labels = []
@@ -651,6 +667,7 @@ def lof_classification_with_pca(train_features, test_features_normal, test_featu
         'Recall': best_confusion_matrix[1, 1] / (best_confusion_matrix[1, 1] + best_confusion_matrix[1, 0]) if (
                 best_confusion_matrix[1, 1] + best_confusion_matrix[1, 0]) > 0 else 0,
         'F1 Score': best_f1_score,
+        'Lables': [best_labels],
         'ConfusionMatrix': [best_confusion_matrix]
     }
 
@@ -671,8 +688,7 @@ def lof_classification_with_pca(train_features, test_features_normal, test_featu
     plt.title(f'Confusion Matrix Local Outlier Factor with {best_pca_components} PCA components')
     plt.show()
 
-
-
+    return best_labels
 
 
 from sklearn.ensemble import RandomForestClassifier
@@ -899,13 +915,13 @@ oClass_dns=np.ones((len(features_dns),1))*2
 #:i
 #Define a percentagem dos dados originais que serão usados para TREINO (50% neste caso).
 percentage=0.5
-#pB, pYT, pM: Calculam o tamanho do conjunto de treino para cada categoria com base na percentagem definida.
+#pB, pM: Calculam o tamanho do conjunto de treino para cada categoria com base na percentagem definida.
 pB=int(len(features_bruno)*percentage)
 trainFeatures_bruno=features_bruno[:pB,:]
 pM=int(len(features_marta)*percentage)
 trainFeatures_marta=features_marta[:pM,:]
-pD=int(len(features_dns)*percentage)
-trainFeatures_dns=features_dns[:pD,:]
+# pD=int(len(features_dns)*percentage)
+# trainFeatures_dns=features_dns[:pD,:]
 
 #i2train: Build train features of normal behavior
 # i2train=np.vstack((trainFeatures_bruno,trainFeatures_marta))
@@ -918,18 +934,31 @@ trainFeatures_dns=features_dns[:pD,:]
 #:iii
 testFeatures_bruno=features_bruno[pB:,:]
 testFeatures_marta=features_marta[pM:,:]
-testFeatures_dns=features_dns[pD:,:]
+testFeatures_dns=features_dns
 
 #----------------------------------------------------------Testing Bruno Behaviour----------------------------------------------
 name_excel="bruno_smart"
 
-o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
+o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns))
 o3trainClass=np.vstack((oClass_bruno[:pB]))
 
-one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-# one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-isolation_forest_without_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass)
-isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+# labels2 = one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)
+labels4 = isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+labels5 = lof_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+labels6 = lof_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+
+# final_lables = [labels1, labels2, labels3, labels4, labels5, labels6]
+final_lables = [labels1, labels3, labels4, labels5, labels6]
+
+# print("\nFinal Labels:\n")
+# for i in range(len(labels1)):
+#     for j in range(len(final_lables)):
+#         print(final_lables[j][i])
+
+#     print("\n")
+
 
 #nao estao a funcionar bem
 #random_forest_classification_without_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3trainClass, o3testClass, name_excel)
@@ -938,12 +967,12 @@ isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_d
 #----------------------------------------------------------Testing Marta Behaviour----------------------------------------------
 name_excel="marta_smart"
 
-o3testClass=np.vstack((oClass_marta[:pM],oClass_dns[pD:]))
+o3testClass=np.vstack((oClass_marta[:pM],oClass_dns))
 o3trainClass=np.vstack(oClass_marta[:pM])
 
 # one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 # one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-# isolation_forest_without_pca(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass)
+# isolation_forest(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass)
 # isolation_forest_with_pca(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass,name_excel)
 
 # one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
