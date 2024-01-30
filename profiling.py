@@ -525,29 +525,40 @@ def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_
 
 
 
+##########################################################localOutflier without pca######################################
 from sklearn.ensemble import RandomForestClassifier
-
-
-def random_forest_classification_without_pca(train_features, test_features_normal, test_features_dns, o3_train_class, o3_test_class, name_excel):
+from sklearn.neighbors import LocalOutlierFactor
+def lof_classification_without_pca(train_features, test_features_normal, test_features_dns, o3testClass, name_excel):
+    
     i3_train = np.vstack((train_features))
     i3_test = np.vstack((test_features_normal, test_features_dns))
+    actual_labels=[]
+    predictions=[]
+    nObsTest, nFea = i3_test.shape
 
-    # Create a Random Forest Classifier
-    random_forest = RandomForestClassifier(n_estimators=30, random_state=40)
+    # Create a Local Outlier Factor instance
+    lof = LocalOutlierFactor(n_neighbors=80, contamination=0.5)
 
     # Fit the model on the training features
-    random_forest.fit(i3_train, o3_train_class)
+    lof.fit(i3_train)
 
-    # Predict classes on the test features
-    predictions = random_forest.predict(i3_test)
-
-    
+    # Predict anomaly scores on the test features
+    anomaly_predictions = lof.fit_predict(i3_test)
+    #print(anomaly_predictions)
+    for i in range(nObsTest):
+        actual_labels.append(o3testClass[i][0])
+        if(anomaly_predictions[i]==-1):
+            predictions.append(2.0)
+        else:
+            predictions.append(0.0)
+    #print(actual_labels)
     # Evaluate the performance
-    confusion_matrix_result = confusion_matrix(o3_test_class, predictions)
-    precision = precision_score(o3_test_class, predictions, pos_label=2)
-    recall = recall_score(o3_test_class, predictions, pos_label=2)
-    f1 = f1_score(o3_test_class, predictions, pos_label=2)
-
+    confusion_matrix_result = confusion_matrix(actual_labels, predictions)
+    precision = confusion_matrix_result[1, 1] / (confusion_matrix_result[1, 1] + confusion_matrix_result[0, 1]) if (
+            confusion_matrix_result[1, 1] + confusion_matrix_result[0, 1]) > 0 else 0
+    recall = confusion_matrix_result[1, 1] / (confusion_matrix_result[1, 1] + confusion_matrix_result[1, 0]) if (
+            confusion_matrix_result[1, 1] + confusion_matrix_result[1, 0]) > 0 else 0
+    f1 = f1_score(actual_labels, predictions,pos_label=2)
     results = {
         'TP': confusion_matrix_result[1, 1],
         'FP': confusion_matrix_result[0, 1],
@@ -556,12 +567,16 @@ def random_forest_classification_without_pca(train_features, test_features_norma
         'Precision': precision,
         'Recall': recall,
         'F1 Score': f1,
-        'ConfusionMatrix': [confusion_matrix_result]  
+        'ConfusionMatrix': [confusion_matrix_result]
     }
 
     df = pd.DataFrame(results)
 
-    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_random_forest.xlsx'), index=False)
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_lof.xlsx'), index=False)
+
+    best_f1_value = df['F1 Score'].max()
+
+    print("F1 Score localOutflier: ", best_f1_value)
 
     # Plot the confusion matrix
     plt.figure(figsize=(8, 6))
@@ -569,46 +584,181 @@ def random_forest_classification_without_pca(train_features, test_features_norma
                 xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title('Confusion Matrix Random Forest')
+    plt.title('Confusion Matrix Local Outlier Factor with F1 score of {f1}')
     plt.show()
 
 
-from sklearn.linear_model import LinearRegression
-
-def linear_regression_model(train_features, test_features_normal, test_features_dns, o3_train_class, o3_test_class, name_excel):
+##########################################################localOutflier with pca######################################
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import LocalOutlierFactor
+    
+def lof_classification_with_pca(train_features, test_features_normal, test_features_dns, o3testClass, name_excel):
+    
+    components_to_test = [5, 10, 15, 20, 25]
     i3_train = np.vstack((train_features))
-    i3_test = np.vstack((test_features_dns))
+    i3_test = np.vstack((test_features_normal, test_features_dns))
+    actual_labels = []
+    predictions = []
+    nObsTest, nFea = i3_test.shape
 
-    # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = i3_train, i3_test, o3_train_class, o3_test_class
+    best_f1_score = 0
+    best_confusion_matrix = None
+    best_pca_components = 0
 
-    # Create a linear regression model
-    model = LinearRegression()
+    for n_components in components_to_test:
+        # Apply PCA
+        pca = PCA(n_components=n_components)
+        i3_train_pca = pca.fit_transform(i3_train)
+        i3_test_pca = pca.transform(i3_test)
 
-    # Train the model
-    model.fit(X_train, y_train)
+        # Create a Local Outlier Factor instance
+        lof = LocalOutlierFactor(n_neighbors=80, contamination=0.5)
 
-    # Make predictions on the test set
-    predictions = model.predict(X_test)
-    print(predictions)
+        # Fit the model on the training features
+        lof.fit(i3_train_pca)
 
-    binary_predictions = np.where(predictions > 1, 2.0, 0.0)
+        # Predict anomaly scores on the test features
+        anomaly_predictions = lof.fit_predict(i3_test_pca)
+
+        for i in range(nObsTest):
+            actual_labels.append(o3testClass[i][0])
+            if anomaly_predictions[i] == -1:
+                predictions.append(2.0)
+            else:
+                predictions.append(0.0)
+
+        # Evaluate the performance
+        confusion_matrix_result = confusion_matrix(actual_labels, predictions)
+        f1 = f1_score(actual_labels, predictions, pos_label=2)
+
+        if f1 > best_f1_score:
+            best_f1_score = f1
+            best_confusion_matrix = confusion_matrix_result
+            best_pca_components = n_components
+
+        # Reset lists for the next iteration
+        actual_labels = []
+        predictions = []
+
+    # Print and save results for the best PCA components
+    results = {
+        'TP': best_confusion_matrix[1, 1],
+        'FP': best_confusion_matrix[0, 1],
+        'TN': best_confusion_matrix[0, 0],
+        'FN': best_confusion_matrix[1, 0],
+        'Precision': best_confusion_matrix[1, 1] / (best_confusion_matrix[1, 1] + best_confusion_matrix[0, 1]) if (
+                best_confusion_matrix[1, 1] + best_confusion_matrix[0, 1]) > 0 else 0,
+        'Recall': best_confusion_matrix[1, 1] / (best_confusion_matrix[1, 1] + best_confusion_matrix[1, 0]) if (
+                best_confusion_matrix[1, 1] + best_confusion_matrix[1, 0]) > 0 else 0,
+        'F1 Score': best_f1_score,
+        'ConfusionMatrix': [best_confusion_matrix]
+    }
+
+    df = pd.DataFrame(results)
+
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_lof_pca.xlsx'), index=False)
+
+    best_f1_value = df['F1 Score'].max()
+
+    print("F1 Score localOutflier with pca: ", best_f1_value)
+    
+    # Plot the confusion matrix for the best PCA components
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f'Confusion Matrix Local Outlier Factor with {best_pca_components} PCA components')
+    plt.show()
+
+
+
+
+
+from sklearn.ensemble import RandomForestClassifier
+
+
+# def random_forest_classification_without_pca(train_features, test_features_normal, test_features_dns, o3_train_class, o3_test_class, name_excel):
+#     i3_train = np.vstack((train_features))
+#     i3_test = np.vstack((test_features_normal, test_features_dns))
+
+#     # Create a Random Forest Classifier
+#     random_forest = RandomForestClassifier(n_estimators=30, random_state=40)
+
+#     # Fit the model on the training features
+#     random_forest.fit(i3_train, o3_train_class)
+
+#     # Predict classes on the test features
+#     predictions = random_forest.predict(i3_test)
+
+    
+#     # Evaluate the performance
+#     confusion_matrix_result = confusion_matrix(o3_test_class, predictions)
+#     precision = precision_score(o3_test_class, predictions, pos_label=2)
+#     recall = recall_score(o3_test_class, predictions, pos_label=2)
+#     f1 = f1_score(o3_test_class, predictions, pos_label=2)
+
+#     results = {
+#         'TP': confusion_matrix_result[1, 1],
+#         'FP': confusion_matrix_result[0, 1],
+#         'TN': confusion_matrix_result[0, 0],
+#         'FN': confusion_matrix_result[1, 0],
+#         'Precision': precision,
+#         'Recall': recall,
+#         'F1 Score': f1,
+#         'ConfusionMatrix': [confusion_matrix_result]  
+#     }
+
+#     df = pd.DataFrame(results)
+
+#     df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_random_forest.xlsx'), index=False)
+
+#     # Plot the confusion matrix
+#     plt.figure(figsize=(8, 6))
+#     sns.heatmap(confusion_matrix_result, annot=True, cmap='Blues', fmt='d',
+#                 xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
+#     plt.xlabel('Predicted')
+#     plt.ylabel('Actual')
+#     plt.title('Confusion Matrix Random Forest')
+#     plt.show()
+
+
+# from sklearn.linear_model import LinearRegression
+
+# def linear_regression_model(train_features, test_features_normal, test_features_dns, o3_train_class, o3_test_class, name_excel):
+#     i3_train = np.vstack((train_features))
+#     i3_test = np.vstack((test_features_dns))
+
+#     # Split the data into training and testing sets
+#     X_train, X_test, y_train, y_test = i3_train, i3_test, o3_train_class, o3_test_class
+
+#     # Create a linear regression model
+#     model = LinearRegression()
+
+#     # Train the model
+#     model.fit(X_train, y_train)
+
+#     # Make predictions on the test set
+#     predictions = model.predict(X_test)
+#     print(predictions)
+
+#     binary_predictions = np.where(predictions > 1, 2.0, 0.0)
 
 
     
-    # Calculate confusion matrix and F1 score
-    confusion_matrix_result = confusion_matrix(o3_test_class, binary_predictions)
-    f1 = f1_score(o3_test_class, binary_predictions, pos_label=2)
-    print(f'Confusion Matrix:\n{confusion_matrix_result}')
-    print(f'F1 Score: {f1}')
+#     # Calculate confusion matrix and F1 score
+#     confusion_matrix_result = confusion_matrix(o3_test_class, binary_predictions)
+#     f1 = f1_score(o3_test_class, binary_predictions, pos_label=2)
+#     print(f'Confusion Matrix:\n{confusion_matrix_result}')
+#     print(f'F1 Score: {f1}')
 
 
 
-    # You can also save the plot if needed
-    # plt.savefig(os.path.join('resultados_script_dumb', f'{name_excel}_linear_regression_plot.png'))
+#     # You can also save the plot if needed
+#     # plt.savefig(os.path.join('resultados_script_dumb', f'{name_excel}_linear_regression_plot.png'))
 
-    # Return the trained model for potential future use
-    return model
+#     # Return the trained model for potential future use
+#     return model
 
 ########### Main Code #############
 
