@@ -197,6 +197,7 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
 
     # Find the index of the row with the best F1 score
     best_f1_index = df['F1 Score'].idxmax()
+    best_f1_value = df['F1 Score'].max()
 
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
 
@@ -210,6 +211,8 @@ def one_class_svm(trainFeatures, testFeatures_normal, testFeatures_dns, o3testCl
     plt.ylabel('Actual label')
     plt.title(f'Best Confusion Matrix One Class SVM \n Best Kernel: {best_kernel}')
     plt.show()
+
+    print("F1 Score OSVM: ", best_f1_value)
 
 
 
@@ -343,6 +346,8 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
 
     # Find the index of the row with the best F1 score
     best_f1_index = df['F1 Score'].idxmax()
+    best_f1_value = df['F1 Score'].max()
+
 
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
     best_number_components=df.loc[best_f1_index,'Number components']
@@ -355,6 +360,8 @@ def one_class_svm_with_pca(trainFeatures, testFeatures_normal, testFeatures_dns,
     plt.ylabel('Actual')
     plt.title(f'Best Confusion Matrix One Class SVM with pca: {best_number_components} and Kernel {best_kernel}')
     plt.show()
+
+    print("F1 Score OSVM PCA: ", best_f1_value)
 
 
 
@@ -369,7 +376,7 @@ def isolation_forest_without_pca(train_features, testFeatures_normal, testFeatur
     i3train = np.vstack((train_features))
     
     # Create an Isolation Forest instance
-    isolation_forest = IsolationForest(contamination=0.2)
+    isolation_forest = IsolationForest(contamination=0.1)
 
     # Fit the model on the training features
     isolation_forest.fit(i3train)
@@ -425,6 +432,8 @@ def isolation_forest_without_pca(train_features, testFeatures_normal, testFeatur
     plt.title(f' Confusion Matrix Isolation Forest')
     plt.show()
 
+    print("F1 Score Isolation Forest: ", f1)
+
 
 
 #########################################################Isolation_forest with pca###################################################
@@ -450,7 +459,7 @@ def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_
         nObsTest, nFea = i3Ctest_pca.shape
 
         # Create an Isolation Forest instance
-        isolation_forest = IsolationForest(contamination=0.2)
+        isolation_forest = IsolationForest(contamination=0.1)
 
         # Fit the model on the training features
         isolation_forest.fit(i3train_pca)
@@ -499,6 +508,7 @@ def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_
 
     # Find the index of the row with the best F1 score
     best_f1_index = df['F1 Score'].idxmax()
+    best_f1_value = df['F1 Score'].max()
     best_confusion_matrix = df.loc[best_f1_index, 'ConfusionMatrix']
     best_number_components=df.loc[best_f1_index,'Number components']
         
@@ -510,6 +520,9 @@ def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_
     plt.ylabel('Actual')
     plt.title(f' Confusion Matrix Isolation Forest with PCA: {best_number_components}')
     plt.show()
+
+    print("F1 Score Isolation Forest pca: ", best_f1_value)
+
 
 
 from sklearn.ensemble import RandomForestClassifier
@@ -611,7 +624,7 @@ nfig=1
 ## -- 2 -- ##
 features_bruno=np.loadtxt("features_bruno.dat")
 features_marta=np.loadtxt("features_marta.dat")
-features_dns=np.loadtxt("features_dns_tunneling.dat")
+features_dns=np.loadtxt("features_dns_tunneling_smart.dat")
 
 
 #It assigns class labels (0 for Bruno and  Marta, and 2 for dns_tunneling) to the respective datasets
@@ -758,26 +771,30 @@ testFeatures_marta=features_marta[pM:,:]
 testFeatures_dns=features_dns[pD:,:]
 
 #----------------------------------------------------------Testing Bruno Behaviour----------------------------------------------
-name_excel="bruno_dumb"
+name_excel="bruno_smart"
 
-o3testClass=np.vstack(oClass_dns[pB:])
-#o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
+o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns[pD:]))
 o3trainClass=np.vstack((oClass_bruno[:pB]))
 
-#one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-#one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-#isolation_forest_without_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass)
-#isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+# one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+isolation_forest_without_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass)
+isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
 
 #nao estao a funcionar bem
 #random_forest_classification_without_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3trainClass, o3testClass, name_excel)
-linear_regression_model(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3trainClass, o3testClass, name_excel)
+# linear_regression_model(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3trainClass, o3testClass, name_excel)
 
 #----------------------------------------------------------Testing Marta Behaviour----------------------------------------------
-name_excel="marta_dumb"
+name_excel="marta_smart"
 
-# o3testClass=np.vstack((oClass_marta[pM:],oClass_dns[pD:]))
-# o3trainClass=np.vstack((oClass_marta[:pM],oClass_dns[:pD]))
+o3testClass=np.vstack((oClass_marta[:pM],oClass_dns[pD:]))
+o3trainClass=np.vstack(oClass_marta[:pM])
+
+# one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+# one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
+# isolation_forest_without_pca(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass)
+# isolation_forest_with_pca(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass,name_excel)
 
 # one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
 # one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
