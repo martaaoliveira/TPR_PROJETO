@@ -942,15 +942,15 @@ name_excel="bruno_smart"
 o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns))
 o3trainClass=np.vstack((oClass_bruno[:pB]))
 
-labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+# labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # labels2 = one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)
-labels4 = isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-labels5 = lof_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-labels6 = lof_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+# labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)
+# labels4 = isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+# labels5 = lof_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+# labels6 = lof_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
 
 # final_lables = [labels1, labels2, labels3, labels4, labels5, labels6]
-final_lables = [labels1, labels3, labels4, labels5, labels6]
+# final_lables = [labels1, labels3, labels4, labels5, labels6]
 
 # print("\nFinal Labels:\n")
 # for i in range(len(labels1)):
@@ -981,4 +981,4 @@ o3trainClass=np.vstack(oClass_marta[:pM])
 # neural_network_classification_with_pca(trainFeatures_marta, testFeatures_marta, trainFeatures_dns, testFeatures_dns, o3trainClass, o3testClass,name_excel)
 
 # # # Wait for user input before exiting
-waitforEnter(fstop=True)
+# waitforEnter(fstop=True)
