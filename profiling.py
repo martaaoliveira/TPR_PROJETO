@@ -809,7 +809,8 @@ def gmm_classification_with_pca(train_features, test_features_normal, test_featu
             best_pca_component = n_components
             best_confusion_matrix = confusion_matrix_result
             best_labels = anomaly_predictions
-            precision,recall=0
+            precision = 0
+            recall = 0
             
         predictions = []
         actual_labels = []
