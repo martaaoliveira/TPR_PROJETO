@@ -690,91 +690,159 @@ def lof_classification_with_pca(train_features, test_features_normal, test_featu
 
     return best_labels
 
+from sklearn.mixture import GaussianMixture
 
-from sklearn.ensemble import RandomForestClassifier
 
+#############################################################Gaussian mixture model#############################################
+def gmm_classification(train_features, test_features_normal, test_features_dns, o3_test_class, name_excel, n_components=2):
+    train_data = np.vstack((train_features))
+    test_data = np.vstack((test_features_normal, test_features_dns))
+    nObsTest, nFea = test_data.shape
+    actual_labels=[]
+    predictions=[]
 
-# def random_forest_classification_without_pca(train_features, test_features_normal, test_features_dns, o3_train_class, o3_test_class, name_excel):
-#     i3_train = np.vstack((train_features))
-#     i3_test = np.vstack((test_features_normal, test_features_dns))
+    # Create a Gaussian Mixture Model instance
+    gmm = GaussianMixture(n_components=2, random_state=42)
 
-#     # Create a Random Forest Classifier
-#     random_forest = RandomForestClassifier(n_estimators=30, random_state=40)
+    # Fit the model on the training features
+    gmm.fit(train_data)
 
-#     # Fit the model on the training features
-#     random_forest.fit(i3_train, o3_train_class)
+    # Predict cluster assignments and anomaly scores on the test features
+    cluster_assignments = gmm.predict(test_data)
+    anomaly_scores = -gmm.score_samples(test_data)
+    threshold = np.percentile(anomaly_scores, 40)  # Consider top 60% as anomalies
 
-#     # Predict classes on the test features
-#     predictions = random_forest.predict(i3_test)
-
+    # Predict anomalies based on the threshold
+    anomaly_predictions = (anomaly_scores > threshold).astype(int)
+    #print(anomaly_predictions)
+    for i in range(nObsTest):
+        actual_labels.append(o3_test_class[i][0])
+        if(anomaly_predictions[i]==1):
+            predictions.append(2.0)
+        else:
+            predictions.append(0.0)
     
-#     # Evaluate the performance
-#     confusion_matrix_result = confusion_matrix(o3_test_class, predictions)
-#     precision = precision_score(o3_test_class, predictions, pos_label=2)
-#     recall = recall_score(o3_test_class, predictions, pos_label=2)
-#     f1 = f1_score(o3_test_class, predictions, pos_label=2)
 
-#     results = {
-#         'TP': confusion_matrix_result[1, 1],
-#         'FP': confusion_matrix_result[0, 1],
-#         'TN': confusion_matrix_result[0, 0],
-#         'FN': confusion_matrix_result[1, 0],
-#         'Precision': precision,
-#         'Recall': recall,
-#         'F1 Score': f1,
-#         'ConfusionMatrix': [confusion_matrix_result]  
-#     }
+    # Evaluate the performance
+    confusion_matrix_result = confusion_matrix(actual_labels, predictions)
+    precision = precision_score(actual_labels, predictions, pos_label=2,average='macro')
+    recall = recall_score(actual_labels, predictions,pos_label=2, average='macro')
+    f1 = f1_score(actual_labels, predictions,pos_label=2, average='macro')
 
-#     df = pd.DataFrame(results)
+    results = {
+        'TP': confusion_matrix_result[1, 1],
+        'FP': confusion_matrix_result[0, 1],
+        'TN': confusion_matrix_result[0, 0],
+        'FN': confusion_matrix_result[1, 0],
+        'Precision': precision,
+        'Recall': recall,
+        'F1 Score': f1,
+        'ConfusionMatrix': [confusion_matrix_result]
+    }
 
-#     df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_random_forest.xlsx'), index=False)
+    df = pd.DataFrame(results)
 
-#     # Plot the confusion matrix
-#     plt.figure(figsize=(8, 6))
-#     sns.heatmap(confusion_matrix_result, annot=True, cmap='Blues', fmt='d',
-#                 xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
-#     plt.xlabel('Predicted')
-#     plt.ylabel('Actual')
-#     plt.title('Confusion Matrix Random Forest')
-#     plt.show()
-
-
-# from sklearn.linear_model import LinearRegression
-
-# def linear_regression_model(train_features, test_features_normal, test_features_dns, o3_train_class, o3_test_class, name_excel):
-#     i3_train = np.vstack((train_features))
-#     i3_test = np.vstack((test_features_dns))
-
-#     # Split the data into training and testing sets
-#     X_train, X_test, y_train, y_test = i3_train, i3_test, o3_train_class, o3_test_class
-
-#     # Create a linear regression model
-#     model = LinearRegression()
-
-#     # Train the model
-#     model.fit(X_train, y_train)
-
-#     # Make predictions on the test set
-#     predictions = model.predict(X_test)
-#     print(predictions)
-
-#     binary_predictions = np.where(predictions > 1, 2.0, 0.0)
-
-
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_gmm.xlsx'), index=False)
     
-#     # Calculate confusion matrix and F1 score
-#     confusion_matrix_result = confusion_matrix(o3_test_class, binary_predictions)
-#     f1 = f1_score(o3_test_class, binary_predictions, pos_label=2)
-#     print(f'Confusion Matrix:\n{confusion_matrix_result}')
-#     print(f'F1 Score: {f1}')
+    best_f1_value = df['F1 Score'].max()
+
+    print("F1 Score Gaussian mixture model: ", best_f1_value)
+    
+
+    # Plot the confusion matrix
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(confusion_matrix_result, annot=True, cmap='Blues', fmt='d',
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title('Confusion Matrix Gaussian Mixture Model')
+    plt.show()
+
+    return anomaly_predictions
 
 
+def gmm_classification_with_pca(train_features, test_features_normal, test_features_dns, o3_test_class, name_excel):
+    train_data = np.vstack((train_features))
+    test_data = np.vstack((test_features_normal, test_features_dns))
+    nObsTest, nFea = test_data.shape
+    components_to_test = [5, 10, 15, 20, 25]
+    best_f1_score = 0
+    best_pca_component = 0
+    best_confusion_matrix = None
+    actual_labels = []
+    predictions = []
 
-#     # You can also save the plot if needed
-#     # plt.savefig(os.path.join('resultados_script_dumb', f'{name_excel}_linear_regression_plot.png'))
+    for n_components in components_to_test:
+        # Apply PCA
+        pca = PCA(n_components=n_components)
+        train_data_pca = pca.fit_transform(train_data)
+        test_data_pca = pca.transform(test_data)
 
-#     # Return the trained model for potential future use
-#     return model
+        # Create a Gaussian Mixture Model instance
+        gmm = GaussianMixture(n_components=2, random_state=42)
+
+        # Fit the model on the training features
+        gmm.fit(train_data_pca)
+
+        # Predict cluster assignments and anomaly scores on the test features
+        cluster_assignments = gmm.predict(test_data_pca)
+        anomaly_scores = -gmm.score_samples(test_data_pca)
+        threshold = np.percentile(anomaly_scores, 40)  # Consider top 60% as anomalies
+
+        # Predict anomalies based on the threshold
+        anomaly_predictions = (anomaly_scores > threshold).astype(int)
+        for i in range(nObsTest):
+            actual_labels.append(o3_test_class[i][0])
+            if(anomaly_predictions[i]==1):
+                predictions.append(2.0)
+            else:
+                predictions.append(0.0)
+
+        # Evaluate the performance
+        confusion_matrix_result = confusion_matrix(actual_labels, predictions)
+        precision = precision_score(actual_labels, predictions, pos_label=2, average='macro')
+        recall = recall_score(o3_test_class, predictions, pos_label=2, average='macro')
+        f1 = f1_score(actual_labels, predictions, pos_label=2, average='macro')
+
+        if f1 > best_f1_score:
+            best_f1_score = f1
+            best_pca_component = n_components
+            best_confusion_matrix = confusion_matrix_result
+            best_labels = anomaly_predictions
+            precision,recall=0
+            
+        predictions = []
+        actual_labels = []
+
+    results = {
+        'TP': best_confusion_matrix[1, 1],
+        'FP': best_confusion_matrix[0, 1],
+        'TN': best_confusion_matrix[0, 0],
+        'FN': best_confusion_matrix[1, 0],
+        'Precision': precision,
+        'Recall': recall,
+        'F1 Score': f1,
+        'Lables': [best_labels],
+        'ConfusionMatrix': [best_confusion_matrix]
+    }
+
+    df = pd.DataFrame(results)
+
+    df.to_excel(os.path.join('resultados_script_dumb', f'{name_excel}_resultados_gmm_pca_{n_components}.xlsx'), index=False)
+
+    print("Best F1 Score with PCA: ", best_f1_score)
+    #print("Best PCA Component: ", best_pca_component)
+
+    # Plot the confusion matrix for the best PCA components
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(best_confusion_matrix, annot=True, cmap='Blues', fmt='d',
+                xticklabels=['Normal', 'DNS TUNNEL'], yticklabels=['Normal', 'DNS TUNNEL'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title(f'Confusion Matrix Gaussian mixture model with {best_pca_component} PCA components')
+    plt.show()
+
+    return best_labels
 
 ########### Main Code #############
 
@@ -942,6 +1010,7 @@ name_excel="bruno_smart"
 o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns))
 o3trainClass=np.vstack((oClass_bruno[:pB]))
 
+<<<<<<< HEAD
 # labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # labels2 = one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)
@@ -951,6 +1020,16 @@ o3trainClass=np.vstack((oClass_bruno[:pB]))
 
 # final_lables = [labels1, labels2, labels3, labels4, labels5, labels6]
 # final_lables = [labels1, labels3, labels4, labels5, labels6]
+#labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+# labels2 = one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
+#labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)
+#labels4 = isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+#labels5 = lof_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+#labels6 = lof_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+#labels7=gmm_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+#labels8=gmm_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
+# final_lables = [labels1, labels2, labels3, labels4, labels5, labels6]
+#final_lables = [labels1, labels3, labels4, labels5, labels6]
 
 # print("\nFinal Labels:\n")
 # for i in range(len(labels1)):
