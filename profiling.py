@@ -1010,7 +1010,6 @@ name_excel="bruno_smart"
 o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns))
 o3trainClass=np.vstack((oClass_bruno[:pB]))
 
-<<<<<<< HEAD
 # labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # labels2 = one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
 # labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)

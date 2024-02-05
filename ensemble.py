@@ -15,22 +15,6 @@ def waitforEnter(fstop=False):
         else:
             input("Press ENTER to continue.")
 
-# def get_excel_files(directory):
-#     excel_files = []
-#     for filename in os.listdir(directory):
-#         if filename.endswith(".xlsx") or filename.endswith(".xls"):
-#             file_path = os.path.join(directory, filename)
-#             excel_files.append(file_path)
-#     return excel_files
-
-
-# def get_metrics(df):
-#     TN = df['TN'].sum()
-#     FP = df['FP'].sum()
-#     FN = df['FN'].sum()
-#     TP = df['TP'].sum()
-#     return TN, FP, FN, TP
-
 def main():
     features_bruno=np.loadtxt("features_bruno.dat")
     features_marta=np.loadtxt("features_marta.dat")
@@ -54,55 +38,35 @@ def main():
 
     #--------------------- Bruno's Model ------------------------
     name_excel="bruno_smart"
-
+    trainFeatures_client = trainFeatures_bruno
+    testFeatures_client=trainFeatures_bruno
     o3testClass=np.vstack((oClass_bruno[pB:],oClass_dns))
     o3trainClass=np.vstack((oClass_bruno[:pB]))
     i3_test = np.vstack((testFeatures_bruno, testFeatures_dns))
     nObsTest, nFea = i3_test.shape
-    actual_labels = []
-    for i in range(nObsTest):
-        actual_labels.append(o3testClass[i][0])
-
-    labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-    # labels2 = one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-    labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)
-    labels4 = isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-    labels5 = lof_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-    labels6 = lof_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
 
     #--------------------- Marta's Model ------------------------
-
     # name_excel="marta_smart"
-
+    trainFeatures_client = trainFeatures_marta
+    testFeatures_client=trainFeatures_marta
     # o3testClass=np.vstack((oClass_marta[pB:],oClass_dns))
     # o3trainClass=np.vstack((oClass_marta[:pB]))
     # i3_test = np.vstack((testFeatures_marta, testFeatures_dns))
     # nObsTest, nFea = i3_test.shape
-    # actual_labels = []
-    # for i in range(nObsTest):
-    #     actual_labels.append(o3testClass[i][0])
 
-    # labels1 = one_class_svm(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-    # # labels2 = one_class_svm_with_pca(trainFeatures_marta, testFeatures_marta, testFeatures_dns, o3testClass,name_excel)
-    # labels3 = isolation_forest(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass, name_excel)
-    # labels4 = isolation_forest_with_pca(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass,name_excel)
-    # labels5 = lof_classification(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass,name_excel)
-    # labels6 = lof_classification_with_pca(trainFeatures_marta,testFeatures_marta, testFeatures_dns,o3testClass,name_excel)
+    actual_labels = []
+    for i in range(nObsTest):
+        actual_labels.append(o3testClass[i][0])
 
-
-    # lables_list = [labels1, labels2, labels3, labels4, labels5, labels6]
-    lables_list = [labels1, labels3, labels4, labels5, labels6]
-=======
-    #labels1 = one_class_svm(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-    #labels2 = one_class_svm_with_pca(trainFeatures_bruno, testFeatures_bruno, testFeatures_dns, o3testClass,name_excel)
-    #labels3 = isolation_forest(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass, name_excel)
-    #labels4 = isolation_forest_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-    #labels5 = lof_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-    #labels6 = lof_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-    labels7=gmm_classification(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-    labels8=gmm_classification_with_pca(trainFeatures_bruno,testFeatures_bruno, testFeatures_dns,o3testClass,name_excel)
-    lables_list = [labels7, labels8]
-    #lables_list = [labels1, labels2,labels3, labels4, labels5,labels7,labels8]
+    labels1 = one_class_svm(trainFeatures_client, testFeatures_client, testFeatures_dns, o3testClass,name_excel)
+    labels2 = one_class_svm_with_pca(trainFeatures_client, testFeatures_client, testFeatures_dns, o3testClass,name_excel)
+    labels3 = isolation_forest(trainFeatures_client,testFeatures_client, testFeatures_dns,o3testClass, name_excel)
+    labels4 = isolation_forest_with_pca(trainFeatures_client,testFeatures_client, testFeatures_dns,o3testClass,name_excel)
+    labels5 = lof_classification(trainFeatures_client,testFeatures_client, testFeatures_dns,o3testClass,name_excel)
+    # labels6 = lof_classification_with_pca(trainFeatures_client,testFeatures_client, testFeatures_dns,o3testClass,name_excel)
+    labels7=gmm_classification(trainFeatures_client,testFeatures_client, testFeatures_dns,o3testClass,name_excel)
+    labels8=gmm_classification_with_pca(trainFeatures_client,testFeatures_client, testFeatures_dns,o3testClass,name_excel)
+    lables_list = [labels1, labels2,labels3, labels4, labels5, labels7,labels8]
     final_lables = []
 
     for i in range(len(labels7)):
