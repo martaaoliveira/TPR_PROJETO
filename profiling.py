@@ -409,7 +409,7 @@ def isolation_forest(train_features, testFeatures_normal, testFeatures_dns, o3te
     TP = confusion_matrix_result[1, 1]
     precision = precision_score(actual_labels, binary_predictions, pos_label=2)
     recall = recall_score(actual_labels, binary_predictions, pos_label=2)
-    f1 = f1_score(actual_labels, binary_predictions, pos_label=2)
+    f1 = f1_score(actual_labels, binary_predictions, pos_label=2)*100
     #print(f1)
 
     results = {
@@ -492,7 +492,7 @@ def isolation_forest_with_pca(train_features, testFeatures_normal, testFeatures_
         # Calculate precision, recall, and F1 score
         precision = precision_score(actual_labels, binary_predictions, pos_label=2)
         recall = recall_score(actual_labels, binary_predictions, pos_label=2)
-        f1 = f1_score(actual_labels, binary_predictions, pos_label=2)
+        f1 = f1_score(actual_labels, binary_predictions, pos_label=2)*100
 
         # Store results in a dictionary
         results = {
@@ -571,7 +571,7 @@ def lof_classification(train_features, test_features_normal, test_features_dns, 
             confusion_matrix_result[1, 1] + confusion_matrix_result[0, 1]) > 0 else 0
     recall = confusion_matrix_result[1, 1] / (confusion_matrix_result[1, 1] + confusion_matrix_result[1, 0]) if (
             confusion_matrix_result[1, 1] + confusion_matrix_result[1, 0]) > 0 else 0
-    f1 = f1_score(actual_labels, predictions,pos_label=2)
+    f1 = f1_score(actual_labels, predictions,pos_label=2)*100
     results = {
         'TP': confusion_matrix_result[1, 1],
         'FP': confusion_matrix_result[0, 1],
@@ -644,7 +644,7 @@ def lof_classification_with_pca(train_features, test_features_normal, test_featu
 
         # Evaluate the performance
         confusion_matrix_result = confusion_matrix(actual_labels, predictions)
-        f1 = f1_score(actual_labels, predictions, pos_label=2)
+        f1 = f1_score(actual_labels, predictions, pos_label=2)*100
 
         if f1 > best_f1_score:
             best_f1_score = f1
@@ -727,7 +727,7 @@ def gmm_classification(train_features, test_features_normal, test_features_dns, 
     confusion_matrix_result = confusion_matrix(actual_labels, predictions)
     precision = precision_score(actual_labels, predictions, pos_label=2,average='macro')
     recall = recall_score(actual_labels, predictions,pos_label=2, average='macro')
-    f1 = f1_score(actual_labels, predictions,pos_label=2, average='macro')
+    f1 = f1_score(actual_labels, predictions,pos_label=2, average='macro')*100
 
     results = {
         'TP': confusion_matrix_result[1, 1],
@@ -802,7 +802,7 @@ def gmm_classification_with_pca(train_features, test_features_normal, test_featu
         confusion_matrix_result = confusion_matrix(actual_labels, predictions)
         precision = precision_score(actual_labels, predictions, pos_label=2, average='macro')
         recall = recall_score(o3_test_class, predictions, pos_label=2, average='macro')
-        f1 = f1_score(actual_labels, predictions, pos_label=2, average='macro')
+        f1 = f1_score(actual_labels, predictions, pos_label=2, average='macro')*100
 
         if f1 > best_f1_score:
             best_f1_score = f1
